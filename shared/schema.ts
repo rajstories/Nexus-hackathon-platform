@@ -1,4 +1,4 @@
-import { pgTable, varchar, text, timestamp, uuid, boolean } from "drizzle-orm/pg-core";
+import { pgTable, varchar, text, timestamp, uuid, boolean, decimal, integer, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -62,6 +62,43 @@ export const submissions = pgTable("submissions", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Judge assignments for events
+export const judgeAssignments = pgTable("judge_assignments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id").notNull().references(() => events.id),
+  judgeId: uuid("judge_id").notNull().references(() => users.id),
+  assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueJudgeEvent: unique().on(table.eventId, table.judgeId),
+}));
+
+// Evaluation criteria for events
+export const evaluationCriteria = pgTable("evaluation_criteria", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id").notNull().references(() => events.id),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  maxScore: integer("max_score").notNull().default(10),
+  weight: decimal("weight", { precision: 3, scale: 2 }).notNull().default("1.00"),
+  displayOrder: integer("display_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Scores table for multi-round evaluation
+export const scores = pgTable("scores", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  submissionId: uuid("submission_id").notNull().references(() => submissions.id),
+  judgeId: uuid("judge_id").notNull().references(() => users.id),
+  criteriaId: uuid("criteria_id").notNull().references(() => evaluationCriteria.id),
+  round: integer("round").notNull().default(1),
+  score: decimal("score", { precision: 4, scale: 2 }).notNull(),
+  feedback: text("feedback"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueJudgeSubmissionCriteriaRound: unique().on(table.submissionId, table.judgeId, table.criteriaId, table.round),
+}));
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   teamsCreated: many(teams),
@@ -75,6 +112,8 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
     references: [users.id],
   }),
   teams: many(teams),
+  judgeAssignments: many(judgeAssignments),
+  evaluationCriteria: many(evaluationCriteria),
 }));
 
 export const teamsRelations = relations(teams, ({ one, many }) => ({
@@ -101,7 +140,7 @@ export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
   }),
 }));
 
-export const submissionsRelations = relations(submissions, ({ one }) => ({
+export const submissionsRelations = relations(submissions, ({ one, many }) => ({
   team: one(teams, {
     fields: [submissions.teamId],
     references: [teams.id],
@@ -114,6 +153,41 @@ export const submissionsRelations = relations(submissions, ({ one }) => ({
     fields: [submissions.submittedById],
     references: [users.id],
   }),
+  scores: many(scores),
+}));
+
+export const judgeAssignmentsRelations = relations(judgeAssignments, ({ one }) => ({
+  event: one(events, {
+    fields: [judgeAssignments.eventId],
+    references: [events.id],
+  }),
+  judge: one(users, {
+    fields: [judgeAssignments.judgeId],
+    references: [users.id],
+  }),
+}));
+
+export const evaluationCriteriaRelations = relations(evaluationCriteria, ({ one, many }) => ({
+  event: one(events, {
+    fields: [evaluationCriteria.eventId],
+    references: [events.id],
+  }),
+  scores: many(scores),
+}));
+
+export const scoresRelations = relations(scores, ({ one }) => ({
+  submission: one(submissions, {
+    fields: [scores.submissionId],
+    references: [submissions.id],
+  }),
+  judge: one(users, {
+    fields: [scores.judgeId],
+    references: [users.id],
+  }),
+  criteria: one(evaluationCriteria, {
+    fields: [scores.criteriaId],
+    references: [evaluationCriteria.id],
+  }),
 }));
 
 // Zod schemas for validation
@@ -122,6 +196,9 @@ export const insertEventSchema = createInsertSchema(events);
 export const insertTeamSchema = createInsertSchema(teams);
 export const insertTeamMemberSchema = createInsertSchema(teamMembers);
 export const insertSubmissionSchema = createInsertSchema(submissions);
+export const insertJudgeAssignmentSchema = createInsertSchema(judgeAssignments);
+export const insertEvaluationCriteriaSchema = createInsertSchema(evaluationCriteria);
+export const insertScoreSchema = createInsertSchema(scores);
 
 // Type exports
 export type User = typeof users.$inferSelect;
@@ -134,3 +211,9 @@ export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = typeof teamMembers.$inferInsert;
 export type Submission = typeof submissions.$inferSelect;
 export type InsertSubmission = typeof submissions.$inferInsert;
+export type JudgeAssignment = typeof judgeAssignments.$inferSelect;
+export type InsertJudgeAssignment = typeof judgeAssignments.$inferInsert;
+export type EvaluationCriteria = typeof evaluationCriteria.$inferSelect;
+export type InsertEvaluationCriteria = typeof evaluationCriteria.$inferInsert;
+export type Score = typeof scores.$inferSelect;
+export type InsertScore = typeof scores.$inferInsert;

@@ -161,6 +161,31 @@ The project uses a comprehensive environment variable system for configuration a
 - **Features**: Public blob URLs, automatic container creation, structured file organization
 - **Security**: MIME type validation, file size limits, team membership verification
 
+## Multi-Round Evaluation & Scoring System
+✓ Implemented comprehensive judging system with multi-round evaluation support
+✓ Created judge assignments with unique event-judge constraints and role-based access control
+✓ Built evaluation criteria system with weighted scoring, max scores, and display ordering
+✓ Added scores table with unique constraints preventing duplicate judge/submission/criteria/round combinations
+✓ Implemented aggregate score calculation using SQL AVG queries for fast organizer views
+✓ Created role-based endpoints: judges can score, organizers can view aggregates and setup events
+
+### Judge Routes
+- **GET /api/judging/events/:id/round/:n**: Get assigned submissions for specific round with existing scores and criteria
+- **POST /api/judging/scores**: Submit scores with criteria-based items and optional feedback
+
+### Organizer Routes  
+- **GET /api/judging/events/:eventId/aggregates**: View scoring aggregates by round with completion tracking
+- **POST /api/admin/events/:eventId/judges**: Assign judges to events by email
+- **POST /api/admin/events/:eventId/criteria**: Create evaluation criteria with weights and ordering
+- **GET /api/admin/events/:eventId/setup**: View complete event setup (judges + criteria)
+
+### Scoring Features
+- **Multi-round support**: Judges can evaluate submissions across multiple rounds
+- **Criteria-based scoring**: Flexible evaluation criteria with custom weights and max scores  
+- **Aggregate calculations**: SQL-based AVG scoring with min/max tracking for organizers
+- **Completion tracking**: Real-time progress monitoring for judging completion rates
+- **Feedback system**: Optional text feedback per submission from judges
+
 ## Environment & Configuration Setup
 ✓ Added comprehensive .env.example files for root, client, and server
 ✓ Created detailed README.md with environment variable documentation

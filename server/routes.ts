@@ -7,6 +7,8 @@ import authRouter from "./routes/auth";
 import eventRouter from "./routes/events";
 import teamRouter from "./routes/teams";
 import submissionRouter from "./routes/submissions";
+import judgingRouter from "./routes/judging";
+import adminRouter from "./routes/admin";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -20,6 +22,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Submission routes
   app.use('/api/submissions', submissionRouter);
+  
+  // Judging routes
+  app.use('/api/judging', judgingRouter);
+  
+  // Admin routes for judge assignment and criteria setup
+  app.use('/api/admin', adminRouter);
 
   // Health check endpoint with database status
   app.get("/api/health", async (req, res) => {
