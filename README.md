@@ -129,13 +129,14 @@ fusion-x/
 | `npm run lint` | Lints all code files | ESLint + Prettier formatting |
 | `node scripts/migrate-sql.js` | Runs Azure SQL database migrations | Creates tables and indexes |
 | `node scripts/seed-sql.js` | Seeds Azure SQL database with sample data | Adds sample event, users, teams, and submissions |
+| `node scripts/seed-mongo.js` | Seeds MongoDB with flexible data | Adds announcements, chat messages, and similarity indexes |
 | `node scripts/test-db.js` | Tests Azure SQL database connection | Verifies connection and shows table statistics |
 
 ## 🔌 API Endpoints
 
 | Endpoint | Method | Description | Response |
 |----------|--------|-------------|----------|
-| `/api/health` | GET | Health check | `{ status: "healthy", timestamp: "...", version: "1.0.0" }` |
+| `/api/health` | GET | Database health check | `{ status: "healthy", sql: "ok", mongo: "ok", timestamp: "...", version: "1.0.0" }` |
 | `/api/info` | GET | API information | `{ name: "Fusion X API", description: "...", endpoints: [...] }` |
 
 ## 🗄️ Database Schema
@@ -196,6 +197,41 @@ node scripts/seed-sql.js
 
 # Verify data
 node scripts/test-db.js
+
+# Seed MongoDB with flexible data
+node scripts/seed-mongo.js
+```
+
+## 🍃 MongoDB Collections
+
+### Flexible Data Models
+
+**Announcements**
+- `eventId` (String, indexed)
+- `message` (String, max 2000 chars)
+- `createdAt` (Date, auto-generated)
+
+**ChatMessages**
+- `eventId` (String, indexed)
+- `teamId` (String, optional, indexed)
+- `userId` (String, indexed)
+- `text` (String, max 1000 chars)
+- `createdAt` (Date, auto-generated)
+
+**SimilarityIndex**
+- `submissionId` (String, unique)
+- `vector` (Array of numbers, max 1024 dimensions)
+- `meta` (Object, flexible metadata)
+- `createdAt`, `updatedAt` (Date, auto-generated)
+
+### MongoDB Operations
+
+```bash
+# Seed MongoDB collections
+node scripts/seed-mongo.js
+
+# Check both database statuses
+curl http://localhost:5000/api/health
 ```
 
 ## 🚢 Deployment

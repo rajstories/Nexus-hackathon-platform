@@ -118,3 +118,17 @@ The project uses a comprehensive environment variable system for configuration a
 ### Database Schema
 Tables: users, events, tracks, teams, team_members, submissions, judges, scores, announcements
 Features: Full referential integrity, indexes for performance, comprehensive seed data for hackathon event
+
+## Database Layer - MongoDB (Flexible)
+✓ Installed mongoose package for MongoDB connectivity
+✓ Created MongoDB models: Announcement, ChatMessage, SimilarityIndex
+✓ Built connection manager with health checks (server/db/mongo.ts)
+✓ Implemented repository pattern for flexible data operations
+✓ Added MongoDB seeding with realistic chat and announcement data
+✓ Updated health endpoint to show both SQL and MongoDB status
+✓ Created seeding script (scripts/seed-mongo.js)
+
+### MongoDB Collections
+- **Announcements**: Event announcements with timestamps
+- **ChatMessages**: Team and event chat with optional team scoping
+- **SimilarityIndex**: Vector embeddings for AI-powered submission similarity
