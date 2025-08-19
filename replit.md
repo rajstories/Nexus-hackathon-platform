@@ -1,6 +1,6 @@
 # Overview
 
-This is a full-stack web application built with a React frontend and Express.js backend using TypeScript. The project follows a monorepo structure with shared type definitions and implements a modern tech stack including Drizzle ORM for database operations, shadcn/ui for the component library, and TailwindCSS for styling. The application appears to be a starter template called "Fusion X" with basic API endpoints and a landing page showcasing modern web development features.
+This is a full-stack web application built with a React frontend and Express.js backend using TypeScript. The project follows a monorepo structure with shared type definitions and implements a modern tech stack including Drizzle ORM for database operations, shadcn/ui for the component library, and TailwindCSS for styling. The application is a production-ready starter template called "Fusion X" featuring an animated splash page, comprehensive environment variable management, and Azure deployment readiness.
 
 # User Preferences
 
@@ -75,3 +75,33 @@ Preferred communication style: Simple, everyday language.
 - **Drizzle ORM**: Type-safe database ORM with PostgreSQL dialect
 - **Zod**: Runtime type validation and schema parsing
 - **connect-pg-simple**: PostgreSQL session store middleware
+
+# Environment Configuration
+
+## Environment Variables
+The project uses a comprehensive environment variable system for configuration across development and production environments:
+
+- **Root .env.example**: Global configuration template
+- **client/.env.example**: Frontend-specific variables (prefixed with VITE_)
+- **server/.env.example**: Backend-specific variables including database and service configurations
+
+## Supported Services
+- **Azure SQL Database**: Production database hosting
+- **MongoDB**: Alternative database option
+- **Azure Blob Storage**: File storage and uploads
+- **Firebase**: Authentication and real-time features
+- **JWT**: Token-based authentication
+
+## Azure App Service Integration
+- Server automatically respects `process.env.PORT` for Azure deployment
+- Environment variables configured through Azure Portal Application Settings
+- Production-ready configuration with proper CORS and security settings
+
+# Recent Changes (August 19, 2025)
+
+## Environment & Configuration Setup
+✓ Added comprehensive .env.example files for root, client, and server
+✓ Created detailed README.md with environment variable documentation
+✓ Updated .gitignore to exclude environment files
+✓ Documented Azure App Service deployment process
+✓ Verified server respects PORT environment variable for Azure compatibility
