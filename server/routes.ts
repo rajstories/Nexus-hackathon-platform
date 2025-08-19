@@ -12,8 +12,11 @@ import judgingRouter from "./routes/judging";
 import adminRouter from "./routes/admin";
 import leaderboardRouter from "./routes/leaderboard";
 import similarityRouter from "./routes/similarity";
+import certificatesRouter from "./routes/certificates";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const objectStorageService = new ObjectStorageService();
   // Authentication routes
   app.use('/api/auth', authRouter);
   
@@ -37,6 +40,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Similarity detection routes
   app.use('/api/similarity', similarityRouter);
+  
+  // Certificates routes
+  app.use('/api', certificatesRouter);
+  
+  // Object storage routes - serve public objects/certificates
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        req.path,
+      );
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving object:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
 
   // Health check endpoint with database status
   app.get("/api/health", async (req, res) => {

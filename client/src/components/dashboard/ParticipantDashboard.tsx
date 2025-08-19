@@ -19,8 +19,10 @@ import {
   Clock, 
   Trophy,
   Github,
-  ExternalLink
+  ExternalLink,
+  Award
 } from "lucide-react";
+import { CertificateDownload } from '@/components/CertificateDownload';
 
 export function ParticipantDashboard() {
   const { toast } = useToast();
@@ -117,6 +119,35 @@ export function ParticipantDashboard() {
                   {profile.skills.map((skill) => (
                     <Badge key={skill} variant="secondary">{skill}</Badge>
                   ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="w-5 h-5" />
+                Certificates & Awards
+              </CardTitle>
+              <CardDescription>Download your participation and achievement certificates</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Event Certificate</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Download your certificate once the event ends or if you're marked as a finalist
+                    </p>
+                  </div>
+                  <CertificateDownload
+                    teamId={1} // In real app, use actual team ID
+                    userName={profile.name}
+                    eventName="Fusion X Hackathon 2025"
+                    eventId={1}
+                    role="participant"
+                  />
                 </div>
               </div>
             </CardContent>
