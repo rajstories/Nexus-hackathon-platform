@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { socketService } from "./lib/socketService";
 import { storage } from "./storage";
 import { getMongoHealth } from "./db/mongo";
 import { query } from "./db/sql";
@@ -82,6 +83,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Initialize Socket.IO with WebSocket support for Azure App Service
+  socketService.initialize(httpServer);
+  console.log('Socket.IO initialized with Azure WebSocket support');
 
   return httpServer;
 }

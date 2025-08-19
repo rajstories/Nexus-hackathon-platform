@@ -138,3 +138,55 @@ export const requireRole = (allowedRoles: Array<'participant' | 'organizer' | 'j
     next();
   };
 };
+
+/**
+ * Verify Firebase token for Socket.IO connections
+ */
+export async function verifyFirebaseTokenSocket(token: string): Promise<SocketUser> {
+  try {
+    // Remove 'Bearer ' prefix if present
+    const cleanToken = token.replace(/^Bearer\s+/, '');
+    
+    // Development mode - accept mock tokens  
+    if (process.env.NODE_ENV === 'development' && cleanToken.startsWith('test-')) {
+      const mockUsers = {
+        'test-user1-token': { uid: 'user1-uid', email: 'user1@test.com', name: 'Test User 1', role: 'participant' as const },
+        'test-user2-token': { uid: 'user2-uid', email: 'user2@test.com', name: 'Test User 2', role: 'participant' as const },
+        'test-organizer-token': { uid: 'organizer-uid', email: 'organizer@test.com', name: 'Test Organizer', role: 'organizer' as const },
+        'test-judge-token': { uid: 'judge-uid', email: 'judge@test.com', name: 'Test Judge', role: 'judge' as const },
+      };
+      
+      const mockUser = mockUsers[cleanToken as keyof typeof mockUsers];
+      if (!mockUser) {
+        throw new Error('Invalid mock token');
+      }
+      
+      return {
+        firebaseUid: mockUser.uid,
+        email: mockUser.email,
+        name: mockUser.name,
+        role: mockUser.role,
+        userId: mockUser.uid,
+      };
+    }
+
+    // In production or with real tokens, verify with Firebase Admin SDK
+    if (admin.apps.length === 0) {
+      throw new Error('Firebase Admin SDK not initialized');
+    }
+
+    const decodedToken = await admin.auth().verifyIdToken(cleanToken);
+    
+    return {
+      firebaseUid: decodedToken.uid,
+      email: decodedToken.email || '',
+      name: decodedToken.name || decodedToken.email || 'Unknown User',
+      role: 'participant', // Default role, should be updated from database
+      userId: decodedToken.uid, // Will be mapped to SQL user ID later
+    };
+    
+  } catch (error) {
+    console.error('Socket token verification failed:', error);
+    throw new Error('Invalid authentication token');
+  }
+}

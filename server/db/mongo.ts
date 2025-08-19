@@ -96,3 +96,40 @@ process.on('SIGTERM', async () => {
   await disconnectMongoDB();
   process.exit(0);
 });
+
+// MongoDB Models
+const announcementSchema = new mongoose.Schema({
+  eventId: { type: String, required: true, index: true },
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  authorId: { type: String, required: true },
+  authorName: { type: String, required: true },
+  type: { type: String, enum: ['announcement', 'alert', 'update'], default: 'announcement' },
+  priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const chatMessageSchema = new mongoose.Schema({
+  eventId: { type: String, required: true, index: true },
+  teamId: { type: String, index: true }, // Optional, for team-specific chat
+  authorId: { type: String, required: true },
+  authorName: { type: String, required: true },
+  authorRole: { type: String, enum: ['participant', 'organizer', 'judge'], default: 'participant' },
+  message: { type: String, required: true },
+  type: { type: String, enum: ['question', 'answer', 'general'], default: 'general' },
+  parentMessageId: { type: String, index: true }, // For threaded Q&A responses
+  isAnswer: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const similarityIndexSchema = new mongoose.Schema({
+  submissionId: { type: String, required: true, unique: true, index: true },
+  eventId: { type: String, required: true, index: true },
+  embedding: [Number], // Vector embedding for similarity
+  metadata: mongoose.Schema.Types.Mixed,
+  createdAt: { type: Date, default: Date.now },
+});
+
+export const Announcement = mongoose.model('Announcement', announcementSchema);
+export const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
+export const SimilarityIndex = mongoose.model('SimilarityIndex', similarityIndexSchema);
