@@ -1,13 +1,5 @@
 import { query } from '../sql';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  created_at: Date;
-  updated_at: Date;
-}
+import { User } from '../../types/database';
 
 export class UserRepository {
   static async findAll(): Promise<User[]> {
@@ -31,11 +23,19 @@ export class UserRepository {
     return result.recordset[0] || null;
   }
 
+  static async findByFirebaseUid(firebaseUid: string): Promise<User | null> {
+    const result = await query<User>(
+      'SELECT * FROM users WHERE firebase_uid = @firebaseUid',
+      { firebaseUid }
+    );
+    return result.recordset[0] || null;
+  }
+
   static async create(userData: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
     const result = await query<User>(
-      `INSERT INTO users (email, name, role)
+      `INSERT INTO users (firebase_uid, email, name, role)
        OUTPUT INSERTED.*
-       VALUES (@email, @name, @role)`,
+       VALUES (@firebase_uid, @email, @name, @role)`,
       userData
     );
     return result.recordset[0];
