@@ -23,8 +23,10 @@ import {
   Clock,
   Trophy,
   FileText,
-  UserCheck
+  UserCheck,
+  Shield
 } from "lucide-react";
+import { SimilarityPanel } from '@/components/SimilarityPanel';
 
 export function OrganizerDashboard() {
   const { toast } = useToast();
@@ -111,12 +113,16 @@ export function OrganizerDashboard() {
       </div>
 
       <Tabs defaultValue="event" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="event" data-testid="tab-event">Event</TabsTrigger>
           <TabsTrigger value="tracks" data-testid="tab-tracks">Tracks</TabsTrigger>
           <TabsTrigger value="announcements" data-testid="tab-announcements">Announcements</TabsTrigger>
           <TabsTrigger value="judges" data-testid="tab-judges">Judges</TabsTrigger>
           <TabsTrigger value="submissions" data-testid="tab-submissions">Submissions</TabsTrigger>
+          <TabsTrigger value="similarity" data-testid="tab-similarity">
+            <Shield className="w-4 h-4 mr-1" />
+            Verify
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="event" className="space-y-6">
@@ -476,6 +482,13 @@ export function OrganizerDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="similarity" className="space-y-6">
+          <SimilarityPanel 
+            eventId={currentEvent.id.toString()}
+            authToken="mock-firebase-token-organizer"
+          />
         </TabsContent>
       </Tabs>
     </div>

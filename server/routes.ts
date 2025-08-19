@@ -11,6 +11,7 @@ import submissionRouter from "./routes/submissions";
 import judgingRouter from "./routes/judging";
 import adminRouter from "./routes/admin";
 import leaderboardRouter from "./routes/leaderboard";
+import similarityRouter from "./routes/similarity";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -33,6 +34,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Leaderboard routes
   app.use('/api/leaderboard', leaderboardRouter);
+  
+  // Similarity detection routes
+  app.use('/api/similarity', similarityRouter);
 
   // Health check endpoint with database status
   app.get("/api/health", async (req, res) => {
