@@ -127,6 +127,9 @@ fusion-x/
 | `npm start` | Starts production server | Serves built frontend and API |
 | `npm run type-check` | Type checks all TypeScript files | Validates types across the monorepo |
 | `npm run lint` | Lints all code files | ESLint + Prettier formatting |
+| `node scripts/migrate-sql.js` | Runs Azure SQL database migrations | Creates tables and indexes |
+| `node scripts/seed-sql.js` | Seeds Azure SQL database with sample data | Adds sample event, users, teams, and submissions |
+| `node scripts/test-db.js` | Tests Azure SQL database connection | Verifies connection and shows table statistics |
 
 ## 🔌 API Endpoints
 
@@ -134,6 +137,66 @@ fusion-x/
 |----------|--------|-------------|----------|
 | `/api/health` | GET | Health check | `{ status: "healthy", timestamp: "...", version: "1.0.0" }` |
 | `/api/info` | GET | API information | `{ name: "Fusion X API", description: "...", endpoints: [...] }` |
+
+## 🗄️ Database Schema
+
+### Azure SQL Database Tables
+
+**Users**
+- `id` (UNIQUEIDENTIFIER, PK)
+- `email` (NVARCHAR(255), UNIQUE)
+- `name` (NVARCHAR(255))
+- `role` (NVARCHAR(50)) - participant, judge, admin
+- `created_at`, `updated_at` (DATETIME2)
+
+**Events**
+- `id` (UNIQUEIDENTIFIER, PK)
+- `title` (NVARCHAR(255))
+- `description` (NTEXT)
+- `mode` (NVARCHAR(50)) - hybrid, online, in-person
+- `start_at`, `end_at` (DATETIME2)
+- `created_at`, `updated_at` (DATETIME2)
+
+**Teams**
+- `id` (UNIQUEIDENTIFIER, PK)
+- `event_id` (FK → events.id)
+- `name` (NVARCHAR(255))
+- `invite_code` (NVARCHAR(10), UNIQUE)
+- `created_at` (DATETIME2)
+
+**Submissions**
+- `id` (UNIQUEIDENTIFIER, PK)
+- `team_id` (FK → teams.id)
+- `event_id` (FK → events.id)
+- `title` (NVARCHAR(255))
+- `repo_url`, `demo_url`, `blob_path` (NVARCHAR(500))
+- `round` (INT)
+- `created_at`, `updated_at` (DATETIME2)
+
+**Scores**
+- `id` (UNIQUEIDENTIFIER, PK)
+- `submission_id` (FK → submissions.id)
+- `judge_id` (FK → judges.id)
+- `criteria` (NVARCHAR(100)) - innovation, technical_implementation, design, impact
+- `score` (INT, 0-100)
+- `feedback` (NTEXT)
+- `round` (INT)
+
+### Database Operations
+
+```bash
+# Test database connection
+node scripts/test-db.js
+
+# Run migrations (creates tables)
+node scripts/migrate-sql.js
+
+# Seed with sample data
+node scripts/seed-sql.js
+
+# Verify data
+node scripts/test-db.js
+```
 
 ## 🚢 Deployment
 
