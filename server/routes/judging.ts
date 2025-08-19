@@ -308,6 +308,35 @@ router.post('/scores',
 
       // Calculate aggregate score for this round
       const aggregateScore = items.reduce((sum, item) => sum + item.score, 0) / items.length;
+      
+      // Broadcast leaderboard update via Socket.IO
+      try {
+        const { broadcastLeaderboardUpdate } = await import('./leaderboard');
+        
+        // Get team info for broadcast
+        const [teamInfo] = await db
+          .select({
+            teamId: submissions.teamId,
+            teamName: teams.name,
+            submissionId: submissions.id,
+          })
+          .from(submissions)
+          .innerJoin(teams, eq(submissions.teamId, teams.id))
+          .where(eq(submissions.id, submission_id))
+          .limit(1);
+        
+        if (teamInfo) {
+          broadcastLeaderboardUpdate(submission.eventId, round, {
+            teamId: teamInfo.teamId,
+            teamName: teamInfo.teamName,
+            submissionId: teamInfo.submissionId,
+            aggregateScore: Math.round(aggregateScore * 100) / 100
+          });
+        }
+      } catch (broadcastError) {
+        console.error('Failed to broadcast leaderboard update:', broadcastError);
+        // Continue even if broadcast fails
+      }
 
       res.status(200).json({
         data: {

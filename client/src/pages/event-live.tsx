@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnnouncementPanel } from '@/components/AnnouncementPanel';
 import { ChatPanel } from '@/components/ChatPanel';
+import { LiveLeaderboard } from '@/components/LiveLeaderboard';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'wouter';
 import { ArrowLeft, Wifi, WifiOff, Users, Calendar, Clock } from 'lucide-react';
@@ -107,26 +108,59 @@ export function EventLivePage() {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
-          {/* Announcements Panel */}
-          <div className="h-full">
-            <AnnouncementPanel
+        <Tabs defaultValue="leaderboard" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="leaderboard">Live Leaderboard</TabsTrigger>
+            <TabsTrigger value="announcements">Announcements</TabsTrigger>
+            <TabsTrigger value="chat">Q&A Chat</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="leaderboard" className="space-y-4">
+            <LiveLeaderboard
               eventId={mockEvent.id}
+              roundNumber={1}
               userRole={userRole}
               authToken={authToken}
+              limit={20}
             />
-          </div>
-
-          {/* Chat Panel */}
-          <div className="h-full">
-            <ChatPanel
-              eventId={mockEvent.id}
-              userRole={userRole}
-              userName={userName}
-              authToken={authToken}
-            />
-          </div>
-        </div>
+          </TabsContent>
+          
+          <TabsContent value="announcements" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-300px)]">
+              <div className="h-full">
+                <AnnouncementPanel
+                  eventId={mockEvent.id}
+                  userRole={userRole}
+                  authToken={authToken}
+                />
+              </div>
+              <div className="h-full">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>About Announcements</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      Stay updated with real-time announcements from organizers. 
+                      Important updates, schedule changes, and alerts will appear here instantly.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="chat" className="space-y-4">
+            <div className="h-[calc(100vh-250px)]">
+              <ChatPanel
+                eventId={mockEvent.id}
+                userRole={userRole}
+                userName={userName}
+                authToken={authToken}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Demo Instructions */}
         <Card className="mt-6" data-testid="demo-instructions">

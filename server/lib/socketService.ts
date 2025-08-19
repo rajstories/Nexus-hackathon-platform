@@ -354,6 +354,18 @@ class SocketService {
       return 0;
     }
   }
+  
+  // Broadcast to all users in an event namespace
+  broadcastToEvent(eventId: string, event: string, data: any): void {
+    if (!this.io) {
+      console.warn('Socket.IO not initialized');
+      return;
+    }
+    
+    // Broadcast to all sockets in the event room
+    this.io.to(`event:${eventId}`).emit(event, data);
+    console.log(`Broadcast ${event} to event:${eventId}`, data);
+  }
 }
 
 // Export singleton instance

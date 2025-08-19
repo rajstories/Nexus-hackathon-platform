@@ -10,6 +10,7 @@ import teamRouter from "./routes/teams";
 import submissionRouter from "./routes/submissions";
 import judgingRouter from "./routes/judging";
 import adminRouter from "./routes/admin";
+import leaderboardRouter from "./routes/leaderboard";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -29,6 +30,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Admin routes for judge assignment and criteria setup
   app.use('/api/admin', adminRouter);
+  
+  // Leaderboard routes
+  app.use('/api/leaderboard', leaderboardRouter);
 
   // Health check endpoint with database status
   app.get("/api/health", async (req, res) => {
