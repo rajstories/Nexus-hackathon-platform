@@ -122,6 +122,26 @@ The project uses a comprehensive environment variable system for configuration a
 - **POST /api/events/:id/judges**: Assign judges to events with role validation
 - **GET /api/events/:id**: Retrieve events with tracks and judges
 
+## Team Management API with PostgreSQL Integration
+✓ Implemented comprehensive team management system with PostgreSQL database
+✓ Created authentication upsert system for Firebase users in SQL database
+✓ Built team creation with unique invite code generation (6-character alphanumeric)
+✓ Implemented team joining via invite codes with validation and duplicate prevention
+✓ Added team member retrieval with full relationship data and creator identification
+✓ Created development-friendly authentication middleware supporting mock tokens
+
+### Team API Endpoints
+- **POST /api/auth/register**: Upsert SQL users from Firebase UID & email on first verified login
+- **GET /api/auth/me**: Get current authenticated user information
+- **POST /api/teams**: Create team (event_id, name) → returns invite_code
+- **POST /api/teams/join**: Join team using invite_code
+- **GET /api/teams/me**: Retrieve user's teams + members with event details
+
+### Database Architecture
+- **PostgreSQL**: Primary database for users, teams, team_members, events using Drizzle ORM
+- **Azure SQL**: Secondary structured database (configured but unavailable in development)
+- **MongoDB**: Flexible data storage for announcements, chat, similarity indexing
+
 ## Environment & Configuration Setup
 ✓ Added comprehensive .env.example files for root, client, and server
 ✓ Created detailed README.md with environment variable documentation

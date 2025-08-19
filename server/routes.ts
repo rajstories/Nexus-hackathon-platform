@@ -5,6 +5,7 @@ import { getMongoHealth } from "./db/mongo";
 import { query } from "./db/sql";
 import authRouter from "./routes/auth";
 import eventRouter from "./routes/events";
+import teamRouter from "./routes/teams";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -12,6 +13,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Event routes
   app.use('/api/events', eventRouter);
+  
+  // Team routes
+  app.use('/api/teams', teamRouter);
 
   // Health check endpoint with database status
   app.get("/api/health", async (req, res) => {

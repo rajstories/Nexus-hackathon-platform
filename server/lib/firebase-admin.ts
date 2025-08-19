@@ -1,7 +1,9 @@
 import admin from 'firebase-admin';
 import { Request, Response, NextFunction } from 'express';
-import { UserRepository } from '../db/repositories/UserRepository';
-import { User } from '../types/database';
+import { storage } from '../storage';
+import { db } from '../db';
+import { users } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
@@ -38,7 +40,53 @@ export const verifyFirebaseToken = async (
 
     const token = authHeader.split('Bearer ')[1];
     
-    // Verify the Firebase ID token
+    // Development mode: handle mock tokens for testing
+    if (process.env.NODE_ENV === 'development' && token.startsWith('test-')) {
+      // Mock user data for development
+      const mockUsers = {
+        'test-user1-token': { uid: 'user1-uid', email: 'user1@test.com', name: 'Test User 1', role: 'participant' as const },
+        'test-user2-token': { uid: 'user2-uid', email: 'user2@test.com', name: 'Test User 2', role: 'participant' as const },
+        'test-organizer-token': { uid: 'organizer-uid', email: 'organizer@test.com', name: 'Test Organizer', role: 'organizer' as const },
+        'test-judge-token': { uid: 'judge-uid', email: 'judge@test.com', name: 'Test Judge', role: 'judge' as const },
+      };
+      
+      const mockUser = mockUsers[token as keyof typeof mockUsers];
+      if (!mockUser) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Invalid mock token'
+        });
+      }
+      
+      // Use storage instead of UserRepository for consistency
+      let user = await storage.getUserByFirebaseUid(mockUser.uid);
+      
+      if (!user) {
+        // Auto-create user if they don't exist
+        user = await storage.upsertUserFromFirebase(mockUser.uid, mockUser.name, mockUser.email);
+        
+        // Update role for non-participants
+        if (mockUser.role !== 'participant') {
+          const [updatedUser] = await db
+            .update(users)
+            .set({ role: mockUser.role, updatedAt: new Date() })
+            .where(eq(users.firebaseUid, mockUser.uid))
+            .returning();
+          user = updatedUser;
+        }
+      }
+
+      req.user = {
+        firebaseUid: mockUser.uid,
+        email: mockUser.email,
+        role: user.role as 'participant' | 'organizer' | 'judge',
+        userId: user.id,
+      };
+
+      return next();
+    }
+    
+    // Production mode: verify actual Firebase token
     const decodedToken = await admin.auth().verifyIdToken(token);
     const { uid, email } = decodedToken;
 
@@ -49,26 +97,14 @@ export const verifyFirebaseToken = async (
       });
     }
 
-    // Get or create user in SQL database
-    let user = await UserRepository.findByFirebaseUid(uid);
-    
-    if (!user) {
-      // Auto-create user if they don't exist
-      const userData = {
-        firebase_uid: uid,
-        name: email.split('@')[0], // Use email prefix as name
-        email: email,
-        role: 'participant' as const, // Default role
-      };
-      
-      user = await UserRepository.create(userData);
-    }
+    // Get or create user in SQL database using storage
+    const user = await storage.upsertUserFromFirebase(uid, email.split('@')[0], email);
 
     // Attach user info to request
     req.user = {
       firebaseUid: uid,
       email: email,
-      role: user.role,
+      role: user.role as 'participant' | 'organizer' | 'judge',
       userId: user.id,
     };
 
