@@ -21,6 +21,7 @@ export interface AuthenticatedRequest extends Request {
     role: 'participant' | 'organizer' | 'judge';
     userId: string;
   };
+  file?: Express.Multer.File;
 }
 
 export const verifyFirebaseToken = async (

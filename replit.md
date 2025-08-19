@@ -142,6 +142,25 @@ The project uses a comprehensive environment variable system for configuration a
 - **Azure SQL**: Secondary structured database (configured but unavailable in development)
 - **MongoDB**: Flexible data storage for announcements, chat, similarity indexing
 
+## File Submission System with Azure Blob Storage
+✓ Implemented comprehensive file submission system with Azure Blob Storage integration
+✓ Added multer middleware for multipart file uploads with memory storage
+✓ Created structured blob naming: {eventId}/{teamId}/{timestamp}-{filename}
+✓ Implemented MIME type restrictions (ZIP, MP4, PDF files only)
+✓ Added file size limits (~100MB) with proper validation and error handling
+✓ Built dual database storage: PostgreSQL for submission data + MongoDB for file metadata
+✓ Created team membership verification and submission uniqueness constraints
+
+### Submission API Endpoints
+- **POST /api/submissions**: Create submission with optional file upload (multipart form: title, repo_url, demo_url, team_id, file)
+- **GET /api/submissions/team/:teamId**: Retrieve team submissions with file metadata
+
+### Azure Blob Storage Integration
+- **Service**: AzureBlobStorageService with stream upload capabilities
+- **Configuration**: AZURE_STORAGE_ACCOUNT_NAME, AZURE_STORAGE_ACCOUNT_KEY, AZURE_STORAGE_CONTAINER_NAME
+- **Features**: Public blob URLs, automatic container creation, structured file organization
+- **Security**: MIME type validation, file size limits, team membership verification
+
 ## Environment & Configuration Setup
 ✓ Added comprehensive .env.example files for root, client, and server
 ✓ Created detailed README.md with environment variable documentation

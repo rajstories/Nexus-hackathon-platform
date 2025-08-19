@@ -46,6 +46,22 @@ export const teamMembers = pgTable("team_members", {
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 });
 
+// Submissions table
+export const submissions = pgTable("submissions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  teamId: uuid("team_id").notNull().references(() => teams.id),
+  eventId: uuid("event_id").notNull().references(() => events.id),
+  title: varchar("title", { length: 200 }).notNull(),
+  repoUrl: varchar("repo_url", { length: 500 }),
+  demoUrl: varchar("demo_url", { length: 500 }),
+  fileUrl: varchar("file_url", { length: 1000 }),
+  fileName: varchar("file_name", { length: 255 }),
+  fileSize: varchar("file_size", { length: 50 }),
+  submittedById: uuid("submitted_by_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   teamsCreated: many(teams),
@@ -71,6 +87,7 @@ export const teamsRelations = relations(teams, ({ one, many }) => ({
     references: [users.id],
   }),
   members: many(teamMembers),
+  submissions: many(submissions),
 }));
 
 export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
@@ -84,11 +101,27 @@ export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
   }),
 }));
 
+export const submissionsRelations = relations(submissions, ({ one }) => ({
+  team: one(teams, {
+    fields: [submissions.teamId],
+    references: [teams.id],
+  }),
+  event: one(events, {
+    fields: [submissions.eventId],
+    references: [events.id],
+  }),
+  submittedBy: one(users, {
+    fields: [submissions.submittedById],
+    references: [users.id],
+  }),
+}));
+
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertEventSchema = createInsertSchema(events);
 export const insertTeamSchema = createInsertSchema(teams);
 export const insertTeamMemberSchema = createInsertSchema(teamMembers);
+export const insertSubmissionSchema = createInsertSchema(submissions);
 
 // Type exports
 export type User = typeof users.$inferSelect;
@@ -99,3 +132,5 @@ export type Team = typeof teams.$inferSelect;
 export type InsertTeam = typeof teams.$inferInsert;
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = typeof teamMembers.$inferInsert;
+export type Submission = typeof submissions.$inferSelect;
+export type InsertSubmission = typeof submissions.$inferInsert;

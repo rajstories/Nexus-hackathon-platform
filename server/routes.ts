@@ -6,6 +6,7 @@ import { query } from "./db/sql";
 import authRouter from "./routes/auth";
 import eventRouter from "./routes/events";
 import teamRouter from "./routes/teams";
+import submissionRouter from "./routes/submissions";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
@@ -16,6 +17,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Team routes
   app.use('/api/teams', teamRouter);
+  
+  // Submission routes
+  app.use('/api/submissions', submissionRouter);
 
   // Health check endpoint with database status
   app.get("/api/health", async (req, res) => {
