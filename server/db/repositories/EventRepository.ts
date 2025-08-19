@@ -1,28 +1,24 @@
 import { query } from '../sql';
-
-export interface Event {
-  id: string;
-  title: string;
-  description?: string;
-  mode: string;
-  start_at: Date;
-  end_at: Date;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export interface EventWithStats extends Event {
-  team_count: number;
-  participant_count: number;
-  submission_count: number;
-}
+import { Event, Track, EventJudge, EventWithDetails } from '../../types/event';
+import { v4 as uuidv4 } from 'uuid';
 
 export class EventRepository {
-  static async findAll(): Promise<Event[]> {
+  static async create(eventData: Omit<Event, 'id' | 'created_at' | 'updated_at'>): Promise<Event> {
+    const id = uuidv4();
+    const now = new Date().toISOString();
+    
     const result = await query<Event>(
-      'SELECT * FROM events ORDER BY start_at DESC'
+      `INSERT INTO events (id, title, description, mode, start_at, end_at, organizer_id, created_at, updated_at)
+       OUTPUT INSERTED.*
+       VALUES (@id, @title, @description, @mode, @start_at, @end_at, @organizer_id, @created_at, @updated_at)`,
+      {
+        id,
+        ...eventData,
+        created_at: now,
+        updated_at: now
+      }
     );
-    return result.recordset;
+    return result.recordset[0];
   }
 
   static async findById(id: string): Promise<Event | null> {
@@ -33,74 +29,109 @@ export class EventRepository {
     return result.recordset[0] || null;
   }
 
-  static async findWithStats(id: string): Promise<EventWithStats | null> {
-    const result = await query<EventWithStats>(
-      `SELECT 
-        e.*,
-        ISNULL(team_stats.team_count, 0) as team_count,
-        ISNULL(participant_stats.participant_count, 0) as participant_count,
-        ISNULL(submission_stats.submission_count, 0) as submission_count
-       FROM events e
-       LEFT JOIN (
-         SELECT event_id, COUNT(*) as team_count 
-         FROM teams 
-         GROUP BY event_id
-       ) team_stats ON e.id = team_stats.event_id
-       LEFT JOIN (
-         SELECT t.event_id, COUNT(DISTINCT tm.user_id) as participant_count
-         FROM teams t
-         INNER JOIN team_members tm ON t.id = tm.team_id
-         GROUP BY t.event_id
-       ) participant_stats ON e.id = participant_stats.event_id
-       LEFT JOIN (
-         SELECT event_id, COUNT(*) as submission_count
-         FROM submissions
-         GROUP BY event_id
-       ) submission_stats ON e.id = submission_stats.event_id
-       WHERE e.id = @id`,
-      { id }
-    );
-    return result.recordset[0] || null;
+  static async findByIdWithDetails(id: string): Promise<EventWithDetails | null> {
+    const event = await this.findById(id);
+    if (!event) return null;
+
+    const tracks = await this.getEventTracks(id);
+    const judges = await this.getEventJudges(id);
+
+    return {
+      ...event,
+      tracks,
+      judges
+    };
   }
 
-  static async create(eventData: Omit<Event, 'id' | 'created_at' | 'updated_at'>): Promise<Event> {
-    const result = await query<Event>(
-      `INSERT INTO events (title, description, mode, start_at, end_at)
+  static async getEventTracks(eventId: string): Promise<Track[]> {
+    const result = await query<Track>(
+      'SELECT * FROM tracks WHERE event_id = @eventId ORDER BY created_at ASC',
+      { eventId }
+    );
+    return result.recordset;
+  }
+
+  static async getEventJudges(eventId: string): Promise<(EventJudge & {
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  })[]> {
+    const result = await query<any>(
+      `SELECT 
+        ej.id, ej.event_id, ej.user_id, ej.assigned_at,
+        u.id as user_id, u.name as user_name, u.email as user_email
+       FROM event_judges ej
+       INNER JOIN users u ON ej.user_id = u.id
+       WHERE ej.event_id = @eventId
+       ORDER BY ej.assigned_at ASC`,
+      { eventId }
+    );
+    
+    return result.recordset.map((row: any) => ({
+      id: row.id,
+      event_id: row.event_id,
+      user_id: row.user_id,
+      assigned_at: row.assigned_at,
+      user: {
+        id: row.user_id,
+        name: row.user_name,
+        email: row.user_email
+      }
+    }));
+  }
+
+  static async createTrack(eventId: string, trackData: Omit<Track, 'id' | 'event_id' | 'created_at' | 'updated_at'>): Promise<Track> {
+    const id = uuidv4();
+    const now = new Date().toISOString();
+    
+    const result = await query<Track>(
+      `INSERT INTO tracks (id, event_id, name, description, max_teams, created_at, updated_at)
        OUTPUT INSERTED.*
-       VALUES (@title, @description, @mode, @start_at, @end_at)`,
-      eventData
+       VALUES (@id, @event_id, @name, @description, @max_teams, @created_at, @updated_at)`,
+      {
+        id,
+        event_id: eventId,
+        ...trackData,
+        created_at: now,
+        updated_at: now
+      }
     );
     return result.recordset[0];
   }
 
-  static async update(id: string, eventData: Partial<Omit<Event, 'id' | 'created_at'>>): Promise<Event | null> {
-    const setClause = Object.keys(eventData)
-      .map(key => `${key} = @${key}`)
-      .join(', ');
+  static async assignJudge(eventId: string, userId: string): Promise<EventJudge> {
+    const id = uuidv4();
+    const assignedAt = new Date().toISOString();
     
-    if (!setClause) return null;
-
-    const result = await query<Event>(
-      `UPDATE events 
-       SET ${setClause}, updated_at = GETUTCDATE()
+    const result = await query<EventJudge>(
+      `INSERT INTO event_judges (id, event_id, user_id, assigned_at)
        OUTPUT INSERTED.*
-       WHERE id = @id`,
-      { id, ...eventData }
+       VALUES (@id, @event_id, @user_id, @assigned_at)`,
+      {
+        id,
+        event_id: eventId,
+        user_id: userId,
+        assigned_at: assignedAt
+      }
     );
-    return result.recordset[0] || null;
+    return result.recordset[0];
   }
 
-  static async findUpcoming(): Promise<Event[]> {
-    const result = await query<Event>(
-      'SELECT * FROM events WHERE start_at > GETUTCDATE() ORDER BY start_at ASC'
+  static async checkJudgeAlreadyAssigned(eventId: string, userId: string): Promise<boolean> {
+    const result = await query<{ count: number }>(
+      'SELECT COUNT(*) as count FROM event_judges WHERE event_id = @eventId AND user_id = @userId',
+      { eventId, userId }
     );
-    return result.recordset;
+    return result.recordset[0].count > 0;
   }
 
-  static async findActive(): Promise<Event[]> {
-    const result = await query<Event>(
-      'SELECT * FROM events WHERE start_at <= GETUTCDATE() AND end_at >= GETUTCDATE() ORDER BY start_at ASC'
+  static async isEventOrganizer(eventId: string, userId: string): Promise<boolean> {
+    const result = await query<{ count: number }>(
+      'SELECT COUNT(*) as count FROM events WHERE id = @eventId AND organizer_id = @userId',
+      { eventId, userId }
     );
-    return result.recordset;
+    return result.recordset[0].count > 0;
   }
 }

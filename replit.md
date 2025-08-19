@@ -99,6 +99,29 @@ The project uses a comprehensive environment variable system for configuration a
 
 # Recent Changes (August 19, 2025)
 
+## Role-Based Dashboard System
+✓ Built comprehensive ParticipantDashboard with profile management, team creation/joining, event timeline, and project submission
+✓ Created OrganizerDashboard featuring event management, track creation, announcements, judge management, and submission oversight
+✓ Implemented JudgeDashboard with submission evaluation, criteria-based scoring system, and feedback forms
+✓ Added RoleRouter component with beautiful 3-card selection interface
+✓ Integrated all UI components (Tabs, Cards, Dialog, Toast, Progress, Slider) using shadcn/ui
+✓ Added comprehensive data-testid attributes for all interactive elements
+✓ Used Lucide React icons throughout for consistent visual design
+
+## Event Creation API with Zod Validation
+✓ Created comprehensive Zod schemas for event creation, track creation, and judge assignment
+✓ Implemented organizer-only RBAC endpoints with proper Firebase token verification
+✓ Built EventRepository with full CRUD operations and relationship management
+✓ Added proper validation error formatting with human-readable messages
+✓ Created database migrations for events, tracks, and event_judges tables
+✓ Implemented comprehensive API testing with validation scenarios
+
+### API Endpoints
+- **POST /api/events**: Create new events (organizer-only) with Zod validation
+- **POST /api/events/:id/tracks**: Add tracks to events with organizer verification
+- **POST /api/events/:id/judges**: Assign judges to events with role validation
+- **GET /api/events/:id**: Retrieve events with tracks and judges
+
 ## Environment & Configuration Setup
 ✓ Added comprehensive .env.example files for root, client, and server
 ✓ Created detailed README.md with environment variable documentation

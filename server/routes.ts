@@ -4,10 +4,14 @@ import { storage } from "./storage";
 import { getMongoHealth } from "./db/mongo";
 import { query } from "./db/sql";
 import authRouter from "./routes/auth";
+import eventRouter from "./routes/events";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.use('/api/auth', authRouter);
+  
+  // Event routes
+  app.use('/api/events', eventRouter);
 
   // Health check endpoint with database status
   app.get("/api/health", async (req, res) => {
