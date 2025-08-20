@@ -104,11 +104,11 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 w-full">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-5 gap-8 items-center">
             {/* Left Content */}
             <motion.div 
               {...fadeInLeft}
-              className="space-y-8"
+              className="lg:col-span-2 space-y-8"
             >
               <div className="space-y-4">
                 <motion.div className="flex items-center gap-3 mb-6">
@@ -128,7 +128,7 @@ export default function Home() {
                 </motion.h1>
                 <motion.p 
                   {...fadeInUp}
-                  className="text-xl md:text-2xl text-slate-300 font-light leading-relaxed mb-8"
+                  className="text-lg md:text-xl text-slate-300 font-light leading-relaxed mb-8"
                 >
                   Complete hackathon ecosystem for <span className="text-orange-400 font-semibold">organizers</span>, <span className="text-blue-400 font-semibold">participants</span>, and <span className="text-green-400 font-semibold">judges</span>. 
                   Host events, build projects, discover talent.
@@ -180,7 +180,7 @@ export default function Home() {
             {/* Right 3D Illustration */}
             <motion.div 
               {...fadeInRight}
-              className="relative flex items-center justify-center"
+              className="lg:col-span-3 relative flex items-center justify-center"
             >
               <div className="relative w-full max-w-lg">
                 {/* Main Monitor - Hackathon Dashboard */}
