@@ -762,7 +762,7 @@ export default function Home() {
             <div className="mb-6">
               <h3 className="text-2xl font-bold text-white">
                 <span className="text-orange-400">Nexus</span>
-                <div className="text-xs text-slate-400 mt-1">by Advanced Platform</div>
+                <div className="text-xs text-slate-400 mt-1">by FusionX</div>
               </h3>
             </div>
             <p className="text-slate-400 mb-8">Next-Gen Web3 & AI Hackathon Platform with Enterprise Features</p>
