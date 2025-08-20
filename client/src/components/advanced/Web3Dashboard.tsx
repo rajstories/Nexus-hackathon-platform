@@ -176,43 +176,43 @@ export function Web3Dashboard() {
 
   if (loading) {
     return (
-      <div className=\"flex items-center justify-center h-64\">
-        <div className=\"animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600\"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className=\"space-y-6\">
-      <div className=\"flex items-center justify-between\">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className=\"text-3xl font-bold text-gray-900 dark:text-gray-100\">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             🚀 Advanced Platform Dashboard
           </h1>
-          <p className=\"text-gray-600 dark:text-gray-400 mt-1\">
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Web3 Badges • AI Sentiment • Performance Monitoring • Gamification
           </p>
         </div>
-        <Button className=\"bg-gradient-to-r from-purple-500 to-pink-500 text-white\">
-          <Crown className=\"h-4 w-4 mr-2\" />
+        <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+          <Crown className="h-4 w-4 mr-2" />
           Elite Features
         </Button>
       </div>
 
-      <Tabs defaultValue=\"web3\" className=\"w-full\">
-        <TabsList className=\"grid w-full grid-cols-4\">
-          <TabsTrigger value=\"web3\">🎖️ Web3 & NFTs</TabsTrigger>
-          <TabsTrigger value=\"achievements\">🏆 Achievements</TabsTrigger>
-          <TabsTrigger value=\"sentiment\">🧠 AI Analysis</TabsTrigger>
-          <TabsTrigger value=\"performance\">⚡ Performance</TabsTrigger>
+      <Tabs defaultValue="web3" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="web3">🎖️ Web3 & NFTs</TabsTrigger>
+          <TabsTrigger value="achievements">🏆 Achievements</TabsTrigger>
+          <TabsTrigger value="sentiment">🧠 AI Analysis</TabsTrigger>
+          <TabsTrigger value="performance">⚡ Performance</TabsTrigger>
         </TabsList>
 
-        <TabsContent value=\"web3\" className=\"space-y-4\">
-          <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
+        <TabsContent value="web3" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className=\"flex items-center gap-2\">
-                  <Medal className=\"h-5 w-5 text-yellow-500\" />
+                <CardTitle className="flex items-center gap-2">
+                  <Medal className="h-5 w-5 text-yellow-500" />
                   NFT Badge Collection
                 </CardTitle>
                 <CardDescription>
@@ -220,25 +220,25 @@ export function Web3Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className=\"space-y-4\">
-                  <div className=\"flex items-center justify-between\">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <span>Total POAPs Earned</span>
-                    <Badge variant=\"secondary\">7 NFTs</Badge>
+                    <Badge variant="secondary">7 NFTs</Badge>
                   </div>
-                  <div className=\"grid grid-cols-2 gap-4\">
-                    <div className=\"text-center p-4 border rounded-lg\">
-                      <div className=\"text-2xl mb-2\">🏆</div>
-                      <div className=\"font-medium\">Winner Badge</div>
-                      <div className=\"text-sm text-gray-600\">Legendary</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl mb-2">🏆</div>
+                      <div className="font-medium">Winner Badge</div>
+                      <div className="text-sm text-gray-600">Legendary</div>
                     </div>
-                    <div className=\"text-center p-4 border rounded-lg\">
-                      <div className=\"text-2xl mb-2\">⚖️</div>
-                      <div className=\"font-medium\">Judge Badge</div>
-                      <div className=\"text-sm text-gray-600\">Rare</div>
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl mb-2">⚖️</div>
+                      <div className="font-medium">Judge Badge</div>
+                      <div className="text-sm text-gray-600">Rare</div>
                     </div>
                   </div>
-                  <Button className=\"w-full\" data-testid=\"button-view-collection\">
-                    <Target className=\"h-4 w-4 mr-2\" />
+                  <Button className="w-full" data-testid="button-view-collection">
+                    <Target className="h-4 w-4 mr-2" />
                     View Full Collection
                   </Button>
                 </div>
@@ -247,8 +247,8 @@ export function Web3Dashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle className=\"flex items-center gap-2\">
-                  <Shield className=\"h-5 w-5 text-blue-500\" />
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-blue-500" />
                   Blockchain Integration
                 </CardTitle>
                 <CardDescription>
@@ -256,24 +256,24 @@ export function Web3Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className=\"space-y-4\">
-                  <div className=\"flex items-center justify-between\">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <span>Network</span>
-                    <Badge className=\"bg-purple-100 text-purple-800\">Polygon Mumbai</Badge>
+                    <Badge className="bg-purple-100 text-purple-800">Polygon Mumbai</Badge>
                   </div>
-                  <div className=\"flex items-center justify-between\">
+                  <div className="flex items-center justify-between">
                     <span>Contract Status</span>
-                    <Badge className=\"bg-green-100 text-green-800\">
-                      <CheckCircle className=\"h-3 w-3 mr-1\" />
+                    <Badge className="bg-green-100 text-green-800">
+                      <CheckCircle className="h-3 w-3 mr-1" />
                       Active
                     </Badge>
                   </div>
-                  <div className=\"flex items-center justify-between\">
+                  <div className="flex items-center justify-between">
                     <span>Gas Efficiency</span>
-                    <span className=\"text-green-600 font-medium\">Optimized</span>
+                    <span className="text-green-600 font-medium">Optimized</span>
                   </div>
-                  <Button variant=\"outline\" className=\"w-full\" data-testid=\"button-mint-badge\">
-                    <Zap className=\"h-4 w-4 mr-2\" />
+                  <Button variant="outline" className="w-full" data-testid="button-mint-badge">
+                    <Zap className="h-4 w-4 mr-2" />
                     Mint New Badge
                   </Button>
                 </div>
@@ -282,23 +282,23 @@ export function Web3Dashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value=\"achievements\" className=\"space-y-4\">
-          <div className=\"grid grid-cols-1 md:grid-cols-3 gap-6\">
+        <TabsContent value="achievements" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className=\"flex items-center gap-2\">
-                  <Star className=\"h-5 w-5 text-yellow-500\" />
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
                   Player Level
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className=\"text-center space-y-4\">
-                  <div className=\"text-4xl font-bold text-blue-600\">{achievements?.level}</div>
+                <div className="text-center space-y-4">
+                  <div className="text-4xl font-bold text-blue-600">{achievements?.level}</div>
                   <Progress 
                     value={(achievements?.totalPoints || 0) / (achievements?.nextLevelPoints || 1) * 100} 
-                    className=\"w-full\" 
+                    className="w-full" 
                   />
-                  <div className=\"text-sm text-gray-600\">
+                  <div className="text-sm text-gray-600">
                     {achievements?.totalPoints} / {achievements?.nextLevelPoints} XP
                   </div>
                 </div>
@@ -307,34 +307,34 @@ export function Web3Dashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle className=\"flex items-center gap-2\">
-                  <Trophy className=\"h-5 w-5 text-yellow-600\" />
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-yellow-600" />
                   Total Points
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className=\"text-center space-y-4\">
-                  <div className=\"text-4xl font-bold text-purple-600\">
+                <div className="text-center space-y-4">
+                  <div className="text-4xl font-bold text-purple-600">
                     {achievements?.totalPoints.toLocaleString()}
                   </div>
-                  <div className=\"text-sm text-gray-600\">Achievement Points</div>
+                  <div className="text-sm text-gray-600">Achievement Points</div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className=\"flex items-center gap-2\">
-                  <Award className=\"h-5 w-5 text-orange-500\" />
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-orange-500" />
                   Unlocked
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className=\"text-center space-y-4\">
-                  <div className=\"text-4xl font-bold text-green-600\">
+                <div className="text-center space-y-4">
+                  <div className="text-4xl font-bold text-green-600">
                     {achievements?.achievements.filter(a => a.unlocked).length}
                   </div>
-                  <div className=\"text-sm text-gray-600\">
+                  <div className="text-sm text-gray-600">
                     of {achievements?.achievements.length} achievements
                   </div>
                 </div>
@@ -348,25 +348,25 @@ export function Web3Dashboard() {
               <CardDescription>Your progress across all categories</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4\">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {achievements?.achievements.map((achievement) => (
                   <div 
                     key={achievement.id} 
                     className={`p-4 border rounded-lg ${achievement.unlocked ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}
                   >
-                    <div className=\"flex items-center gap-3\">
-                      <div className=\"text-2xl\">{achievement.icon}</div>
-                      <div className=\"flex-1\">
-                        <div className=\"font-medium flex items-center gap-2\">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">{achievement.icon}</div>
+                      <div className="flex-1">
+                        <div className="font-medium flex items-center gap-2">
                           {achievement.name}
                           <Badge className={getRarityColor(achievement.rarity)}>
                             {achievement.rarity}
                           </Badge>
                         </div>
-                        <div className=\"text-sm text-gray-600 mt-1\">
+                        <div className="text-sm text-gray-600 mt-1">
                           {achievement.description}
                         </div>
-                        <div className=\"text-xs text-purple-600 mt-2\">
+                        <div className="text-xs text-purple-600 mt-2">
                           +{achievement.points} points
                         </div>
                       </div>
@@ -378,46 +378,46 @@ export function Web3Dashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value=\"sentiment\" className=\"space-y-4\">
-          <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
+        <TabsContent value="sentiment" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className=\"flex items-center gap-2\">
-                  <Brain className=\"h-5 w-5 text-purple-500\" />
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-purple-500" />
                   Sentiment Overview
                 </CardTitle>
                 <CardDescription>AI-powered community mood analysis</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className=\"space-y-4\">
-                  <div className=\"flex items-center justify-between\">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
                     <span>Overall Sentiment</span>
-                    <Badge className=\"bg-green-100 text-green-800\">
+                    <Badge className="bg-green-100 text-green-800">
                       {((sentiment?.averageSentiment || 0) * 100).toFixed(0)}% Positive
                     </Badge>
                   </div>
-                  <div className=\"space-y-2\">
-                    <div className=\"flex justify-between text-sm\">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
                       <span>Positive</span>
                       <span>{((sentiment?.positiveRatio || 0) * 100).toFixed(0)}%</span>
                     </div>
-                    <Progress value={(sentiment?.positiveRatio || 0) * 100} className=\"bg-green-100\" />
+                    <Progress value={(sentiment?.positiveRatio || 0) * 100} className="bg-green-100" />
                   </div>
-                  <div className=\"space-y-2\">
-                    <div className=\"flex justify-between text-sm\">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
                       <span>Negative</span>
                       <span>{((sentiment?.negativeRatio || 0) * 100).toFixed(0)}%</span>
                     </div>
-                    <Progress value={(sentiment?.negativeRatio || 0) * 100} className=\"bg-red-100\" />
+                    <Progress value={(sentiment?.negativeRatio || 0) * 100} className="bg-red-100" />
                   </div>
-                  <div className=\"grid grid-cols-2 gap-4 mt-4\">
-                    <div className=\"text-center\">
-                      <div className=\"text-sm text-gray-600\">Toxicity</div>
-                      <Badge className=\"bg-green-100 text-green-800\">{sentiment?.toxicityLevel}</Badge>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div className="text-center">
+                      <div className="text-sm text-gray-600">Toxicity</div>
+                      <Badge className="bg-green-100 text-green-800">{sentiment?.toxicityLevel}</Badge>
                     </div>
-                    <div className=\"text-center\">
-                      <div className=\"text-sm text-gray-600\">Helpfulness</div>
-                      <Badge className=\"bg-blue-100 text-blue-800\">{sentiment?.helpfulnessLevel}</Badge>
+                    <div className="text-center">
+                      <div className="text-sm text-gray-600">Helpfulness</div>
+                      <Badge className="bg-blue-100 text-blue-800">{sentiment?.helpfulnessLevel}</Badge>
                     </div>
                   </div>
                 </div>
@@ -426,17 +426,17 @@ export function Web3Dashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle className=\"flex items-center gap-2\">
-                  <MessageSquare className=\"h-5 w-5 text-blue-500\" />
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-blue-500" />
                   Emotional Analysis
                 </CardTitle>
                 <CardDescription>Deep emotion detection in conversations</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className=\"space-y-3\">
+                <div className="space-y-3">
                   {Object.entries(sentiment?.emotionalBreakdown || {}).map(([emotion, value]) => (
-                    <div key={emotion} className=\"space-y-1\">
-                      <div className=\"flex justify-between text-sm capitalize\">
+                    <div key={emotion} className="space-y-1">
+                      <div className="flex justify-between text-sm capitalize">
                         <span>{emotion}</span>
                         <span>{(value * 100).toFixed(0)}%</span>
                       </div>
@@ -449,34 +449,34 @@ export function Web3Dashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value=\"performance\" className=\"space-y-4\">
-          <div className=\"grid grid-cols-1 md:grid-cols-4 gap-6\">
+        <TabsContent value="performance" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card>
-              <CardHeader className=\"pb-2\">
-                <CardTitle className=\"text-sm flex items-center gap-2\">
-                  <Activity className=\"h-4 w-4\" />
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Activity className="h-4 w-4" />
                   System Status
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className=\"text-center\">
+                <div className="text-center">
                   <div className={`text-2xl font-bold ${getStatusColor(performance?.status || 'unknown')}`}>
                     {performance?.status?.toUpperCase()}
                   </div>
-                  <div className=\"text-xs text-gray-600 mt-1\">All systems operational</div>
+                  <div className="text-xs text-gray-600 mt-1">All systems operational</div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className=\"pb-2\">
-                <CardTitle className=\"text-sm\">Memory Usage</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Memory Usage</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className=\"space-y-2\">
-                  <div className=\"text-2xl font-bold\">{performance?.memoryUsage.percentage}%</div>
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold">{performance?.memoryUsage.percentage}%</div>
                   <Progress value={performance?.memoryUsage.percentage} />
-                  <div className=\"text-xs text-gray-600\">
+                  <div className="text-xs text-gray-600">
                     {performance?.memoryUsage.used}MB used
                   </div>
                 </div>
@@ -484,13 +484,13 @@ export function Web3Dashboard() {
             </Card>
 
             <Card>
-              <CardHeader className=\"pb-2\">
-                <CardTitle className=\"text-sm\">Response Time</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Response Time</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className=\"space-y-2\">
-                  <div className=\"text-2xl font-bold\">{performance?.responseTime.average}ms</div>
-                  <div className=\"text-xs text-gray-600\">
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold">{performance?.responseTime.average}ms</div>
+                  <div className="text-xs text-gray-600">
                     P95: {performance?.responseTime.p95}ms
                   </div>
                 </div>
@@ -498,16 +498,16 @@ export function Web3Dashboard() {
             </Card>
 
             <Card>
-              <CardHeader className=\"pb-2\">
-                <CardTitle className=\"text-sm flex items-center gap-2\">
-                  <TrendingUp className=\"h-4 w-4\" />
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
                   Throughput
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className=\"space-y-2\">
-                  <div className=\"text-2xl font-bold\">{performance?.throughput}</div>
-                  <div className=\"text-xs text-gray-600\">req/sec</div>
+                <div className="space-y-2">
+                  <div className="text-2xl font-bold">{performance?.throughput}</div>
+                  <div className="text-xs text-gray-600">req/sec</div>
                 </div>
               </CardContent>
             </Card>
@@ -515,17 +515,17 @@ export function Web3Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle className=\"flex items-center gap-2\">
-                <AlertTriangle className=\"h-5 w-5 text-yellow-500\" />
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-yellow-500" />
                 Performance Insights
               </CardTitle>
               <CardDescription>Optimized for 1000+ concurrent users</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
-                <div className=\"space-y-3\">
-                  <h4 className=\"font-medium text-green-600\">✅ Optimizations Active</h4>
-                  <ul className=\"space-y-2 text-sm\">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <h4 className="font-medium text-green-600">✅ Optimizations Active</h4>
+                  <ul className="space-y-2 text-sm">
                     <li>• Database connection pooling</li>
                     <li>• Redis caching layer</li>
                     <li>• CDN for static assets</li>
@@ -533,9 +533,9 @@ export function Web3Dashboard() {
                     <li>• WebSocket optimization</li>
                   </ul>
                 </div>
-                <div className=\"space-y-3\">
-                  <h4 className=\"font-medium text-blue-600\">📊 Scale Capabilities</h4>
-                  <ul className=\"space-y-2 text-sm\">
+                <div className="space-y-3">
+                  <h4 className="font-medium text-blue-600">📊 Scale Capabilities</h4>
+                  <ul className="space-y-2 text-sm">
                     <li>• Azure Auto-scaling enabled</li>
                     <li>• Load balancer configured</li>
                     <li>• Database read replicas</li>
