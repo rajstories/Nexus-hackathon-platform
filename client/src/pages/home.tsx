@@ -111,40 +111,40 @@ export default function Home() {
               className="space-y-8"
             >
               <div className="space-y-4">
-                <motion.div className="flex items-center gap-3 mb-4">
+                <motion.div className="flex items-center gap-3 mb-6">
                   <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-yellow-500 rounded-lg flex items-center justify-center text-2xl">
                     🚀
                   </div>
-                  <span className="text-orange-400 font-semibold text-sm uppercase tracking-wide">Global Hackathon Platform</span>
+                  <span className="text-orange-400 font-semibold text-sm uppercase tracking-wide">End-to-End Hackathon Ecosystem</span>
                 </motion.div>
                 <motion.h1 
                   {...fadeInUp}
                   className="text-5xl md:text-7xl font-bold leading-tight mb-6"
                 >
-                  <span className="text-white">Build Amazing Projects with</span><br/>
+                  <span className="text-white">Empower Innovation.</span><br/>
                   <span className="text-transparent bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500 bg-clip-text">
-                    FusionX
+                    Streamline Execution.
                   </span>
                 </motion.h1>
                 <motion.p 
                   {...fadeInUp}
-                  className="text-xl md:text-2xl text-slate-300 font-light leading-relaxed mb-6"
+                  className="text-xl md:text-2xl text-slate-300 font-light leading-relaxed mb-8"
                 >
-                  The complete hackathon platform trusted by <span className="text-orange-400 font-semibold">10,000+</span> developers worldwide. 
-                  From idea to deployment in 48 hours.
+                  The end-to-end hackathon ecosystem for <span className="text-orange-400 font-semibold">organizers</span>, <span className="text-blue-400 font-semibold">participants</span>, and <span className="text-green-400 font-semibold">judges</span>. 
+                  Host scalable events, build groundbreaking projects, and discover top talent—all on one powerful platform.
                 </motion.p>
                 <motion.div className="flex flex-wrap gap-6 mb-8 text-sm">
                   <div className="flex items-center gap-2 text-slate-400">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span>500+ Active Hackathons</span>
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span>Powering 500+ Global Innovation Events</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-400">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                    <span>$2M+ in Prizes Awarded</span>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    <span>Facilitating Over $2M in Prize Distribution</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-400">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                    <span>50+ Partner Companies</span>
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                    <span>Trusted by 50+ Industry-Leading Partners</span>
                   </div>
                 </motion.div>
               </div>
@@ -158,11 +158,18 @@ export default function Home() {
                   className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white px-8 py-4 rounded-full text-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
                 >
                   <Rocket className="mr-2 h-5 w-5" />
-                  Start Your Hackathon
+                  Host an Event
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="border-2 border-orange-400 text-orange-400 hover:bg-orange-400 hover:text-slate-900 px-8 py-4 rounded-full text-lg font-semibold transition-all"
+                  className="border-2 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-slate-900 px-8 py-4 rounded-full text-lg font-semibold transition-all"
+                >
+                  <Trophy className="mr-2 h-5 w-5" />
+                  Explore Hackathons
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="border-2 border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 rounded-full text-lg font-semibold transition-all"
                 >
                   <Play className="mr-2 h-5 w-5" />
                   Watch Demo
@@ -183,16 +190,16 @@ export default function Home() {
                 >
                   <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border-4 border-orange-400/30 p-6 shadow-2xl">
                     <div className="bg-slate-900 rounded h-48 border border-slate-700 p-4">
-                      {/* Hackathon Dashboard Content */}
+                      {/* Real-Time Event Intelligence */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="text-orange-400 font-bold text-lg">FusionX Dashboard</div>
+                        <div className="text-orange-400 font-bold text-lg">Your Command Center</div>
                         <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
                       </div>
                       <div className="space-y-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-xs">🏆</div>
                           <div className="text-white text-sm">AI Innovators Challenge</div>
-                          <div className="ml-auto text-green-400 text-xs">Live</div>
+                          <div className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse">LIVE NOW</div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-xs">⚡</div>
@@ -201,13 +208,13 @@ export default function Home() {
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-xs">🧠</div>
-                          <div className="text-white text-sm">ML/AI Summit 2024</div>
-                          <div className="ml-auto text-blue-400 text-xs">Signup</div>
+                          <div className="text-white text-sm">Projects Needing Review</div>
+                          <div className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold">12</div>
                         </div>
                       </div>
                       <div className="mt-4 text-center">
                         <div className="text-orange-400 text-2xl font-bold">247</div>
-                        <div className="text-slate-400 text-xs">Active Teams</div>
+                        <div className="text-slate-400 text-xs">Teams Innovating</div>
                       </div>
                     </div>
                     <div className="mt-4 h-2 bg-slate-700 rounded overflow-hidden">
@@ -281,11 +288,11 @@ export default function Home() {
                   transition={{ delay: 1.3, duration: 0.5 }}
                   className="absolute top-32 left-8 bg-slate-800/80 backdrop-blur-sm border border-orange-400/30 rounded-lg p-3 shadow-lg"
                 >
-                  <div className="text-orange-400 text-sm font-semibold">Live Event</div>
-                  <div className="text-white text-xs">247 Teams Building</div>
+                  <div className="text-orange-400 text-sm font-semibold">Real-Time Intelligence</div>
+                  <div className="text-white text-xs">247 Active Builders</div>
                   <div className="flex items-center gap-1 mt-1">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-green-400 text-xs">Real-time</span>
+                    <span className="text-green-400 text-xs">Live Activity Feed</span>
                   </div>
                 </motion.div>
                 
@@ -319,10 +326,10 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Why <span className="text-orange-400">FusionX</span>?
+              The Complete <span className="text-orange-400">Innovation Platform</span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Everything you need to host successful hackathons with cutting-edge innovation.
+              Experience the pulse of your hackathon with real-time intelligence, dynamic leaderboards, and comprehensive event management.
             </p>
           </motion.div>
 
@@ -490,19 +497,19 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Trusted by Global Innovation Leaders
+              Powering the Future of <span className="text-orange-400">Innovation</span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Join thousands of successful hackathons powered by FusionX technology.
+              Experience the metrics that demonstrate FusionX's impact on the global innovation ecosystem.
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { number: "10,000+", label: "Active Developers", icon: "👨‍💻", color: "text-blue-400" },
-              { number: "500+", label: "Hackathons Hosted", icon: "🚀", color: "text-green-400" },
-              { number: "$2M+", label: "Prize Money Awarded", icon: "💰", color: "text-yellow-400" },
-              { number: "50+", label: "Partner Companies", icon: "🤝", color: "text-purple-400" },
+              { number: "10,000+", label: "Innovation Builders", icon: "👨‍💻", color: "text-blue-400" },
+              { number: "500+", label: "Global Innovation Events", icon: "🚀", color: "text-green-400" },
+              { number: "$2M+", label: "Prize Distribution Facilitated", icon: "💰", color: "text-yellow-400" },
+              { number: "50+", label: "Industry-Leading Partners", icon: "🤝", color: "text-purple-400" },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -539,15 +546,15 @@ export default function Home() {
               <span className="text-orange-400 font-semibold text-sm">Next Hackathon Starting Soon</span>
             </div>
             <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Ready to Host Your
+              Transform Ideas Into
               <br />
               <span className="text-transparent bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text">
-                Epic Hackathon?
+                Innovation Reality
               </span>
             </h2>
             <p className="text-xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Join the global community of innovators. Whether you're organizing your first hackathon or your 50th, 
-              FusionX gives you everything you need to create unforgettable experiences.
+              Join the global ecosystem of innovation leaders. Whether you're organizing enterprise hackathons or discovering breakthrough talent, 
+              FusionX provides the intelligence and infrastructure you need to drive meaningful outcomes.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
               <Button 
@@ -556,7 +563,7 @@ export default function Home() {
                 className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white px-12 py-4 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
               >
                 <Rocket className="mr-2 h-5 w-5" />
-                Launch Your Hackathon
+                Get Started for Organizers
               </Button>
               <Button 
                 size="lg" 
