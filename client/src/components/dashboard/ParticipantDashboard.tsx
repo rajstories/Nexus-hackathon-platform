@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   User, 
   Users, 
@@ -36,6 +38,18 @@ export function ParticipantDashboard() {
     school: "",
     skills: [] as string[]
   });
+  const [teamName, setTeamName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const queryClient = useQueryClient();
+
+  // Fetch user's teams
+  const { data: userTeams, isLoading: teamsLoading } = useQuery({
+    queryKey: ['/api/teams/me'],
+    enabled: !!user,
+  });
+
+  // Get the first team (assuming user can only be in one team per event for now)
+  const currentTeam = userTeams && userTeams.length > 0 ? userTeams[0] : null;
 
   // Show loading while auth is being determined
   if (loading) {
@@ -54,7 +68,7 @@ export function ParticipantDashboard() {
     email: user?.email || "No email",
     school: "Not specified", // Can be added to user profile later
     skills: ["React", "Node.js", "Python", "UI/UX"], // Default skills - can be made dynamic later
-    team: null, // Will be fetched from API later
+    team: currentTeam, // Real team data from API
     photoURL: user?.photoURL
   };
 
@@ -73,19 +87,87 @@ export function ParticipantDashboard() {
     { id: 5, title: "Judging & Awards", date: "2025-08-28", status: "upcoming" }
   ];
 
+  // Create Team Mutation
+  const createTeamMutation = useMutation({
+    mutationFn: async (teamData: { name: string; event_id: string }) => {
+      return await apiRequest('/api/teams', {
+        method: 'POST',
+        body: JSON.stringify(teamData),
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Team Created!",
+        description: `Team "${teamName}" has been created successfully! Invite code: ${data.invite_code}`
+      });
+      setTeamDialogOpen(false);
+      setTeamName("");
+      queryClient.invalidateQueries({ queryKey: ['/api/teams/me'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Creating Team",
+        description: error.message || "Failed to create team. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Join Team Mutation
+  const joinTeamMutation = useMutation({
+    mutationFn: async (inviteCode: string) => {
+      return await apiRequest('/api/teams/join', {
+        method: 'POST',
+        body: JSON.stringify({ invite_code: inviteCode }),
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Team Joined!",
+        description: `You've successfully joined team "${data.team_name}"!`
+      });
+      setInviteCode("");
+      queryClient.invalidateQueries({ queryKey: ['/api/teams/me'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Joining Team",
+        description: error.message || "Invalid invite code. Please check and try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleCreateTeam = () => {
-    toast({
-      title: "Team Created",
-      description: "Your team has been created successfully!"
+    if (!teamName.trim()) {
+      toast({
+        title: "Team Name Required",
+        description: "Please enter a team name.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // For demo, we'll use a default event ID. In a real app, user would select an event
+    const defaultEventId = "550e8400-e29b-41d4-a716-446655440001"; // This should be a real event ID
+    
+    createTeamMutation.mutate({
+      name: teamName,
+      event_id: defaultEventId
     });
-    setTeamDialogOpen(false);
   };
 
   const handleJoinTeam = () => {
-    toast({
-      title: "Team Joined",
-      description: "You've successfully joined the team!"
-    });
+    if (!inviteCode.trim()) {
+      toast({
+        title: "Invite Code Required",
+        description: "Please enter an invite code.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    joinTeamMutation.mutate(inviteCode.trim().toUpperCase());
   };
 
   const handleSubmitProject = () => {
@@ -297,13 +379,19 @@ export function ParticipantDashboard() {
                       Download your certificate once the event ends or if you're marked as a finalist
                     </p>
                   </div>
-                  <CertificateDownload
-                    teamId={1} // In real app, use actual team ID
-                    userName={profile.name}
-                    eventName="Fusion X Hackathon 2025"
-                    eventId={1}
-                    role="participant"
-                  />
+                  {profile.team ? (
+                    <CertificateDownload
+                      teamId={profile.team.id}
+                      userName={profile.name}
+                      eventName={profile.team.event?.title || "Hackathon Event"}
+                      eventId={profile.team.event?.id || "default"}
+                      role="participant"
+                    />
+                  ) : (
+                    <Button disabled variant="outline" data-testid="button-certificate-disabled">
+                      Join a team to download certificates
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -311,7 +399,13 @@ export function ParticipantDashboard() {
         </TabsContent>
 
         <TabsContent value="team" className="space-y-6">
-          {profile.team ? (
+          {teamsLoading ? (
+            <Card>
+              <CardContent className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </CardContent>
+            </Card>
+          ) : profile.team ? (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -322,22 +416,53 @@ export function ParticipantDashboard() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Team Alpha</h3>
-                    <Badge>4/4 Members</Badge>
+                    <h3 className="text-lg font-semibold" data-testid="text-team-name">{profile.team.name}</h3>
+                    <Badge>{profile.team.members?.length || 0} Members</Badge>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map((member) => (
-                      <div key={member} className="text-center space-y-2">
-                        <Avatar className="mx-auto">
-                          <AvatarFallback>M{member}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-sm font-medium">Member {member}</p>
-                          <p className="text-xs text-muted-foreground">Developer</p>
-                        </div>
+                  <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
+                    <p className="text-sm text-muted-foreground mb-2">Invite Code</p>
+                    <div className="flex items-center gap-2">
+                      <code className="bg-slate-200 dark:bg-slate-700 px-3 py-1 rounded text-sm font-mono">
+                        {profile.team.invite_code}
+                      </code>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          navigator.clipboard.writeText(profile.team.invite_code);
+                          toast({
+                            title: "Copied!",
+                            description: "Invite code copied to clipboard."
+                          });
+                        }}
+                        data-testid="button-copy-invite"
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  {profile.team.members && profile.team.members.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-3">Team Members</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {profile.team.members.map((member: any) => (
+                          <div key={member.user_id} className="flex items-center space-x-3 p-3 border rounded-lg">
+                            <Avatar className="w-10 h-10">
+                              <AvatarFallback>
+                                {member.name ? member.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="text-sm font-medium" data-testid={`text-member-${member.user_id}`}>
+                                {member.name || 'Unknown'}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{member.email}</p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -367,14 +492,25 @@ export function ParticipantDashboard() {
                       <div className="space-y-4">
                         <div>
                           <Label htmlFor="team-name">Team Name</Label>
-                          <Input id="team-name" placeholder="Enter team name" data-testid="input-team-name" />
+                          <Input 
+                            id="team-name" 
+                            placeholder="Enter team name" 
+                            value={teamName}
+                            onChange={(e) => setTeamName(e.target.value)}
+                            data-testid="input-team-name" 
+                          />
                         </div>
                         <div>
-                          <Label htmlFor="team-description">Description</Label>
+                          <Label htmlFor="team-description">Description (Optional)</Label>
                           <Textarea id="team-description" placeholder="Describe your team's goals" data-testid="input-team-description" />
                         </div>
-                        <Button onClick={handleCreateTeam} className="w-full" data-testid="button-submit-team">
-                          Create Team
+                        <Button 
+                          onClick={handleCreateTeam} 
+                          className="w-full" 
+                          disabled={createTeamMutation.isPending}
+                          data-testid="button-submit-team"
+                        >
+                          {createTeamMutation.isPending ? "Creating..." : "Create Team"}
                         </Button>
                       </div>
                     </DialogContent>
@@ -393,11 +529,22 @@ export function ParticipantDashboard() {
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="invite-code">Invite Code</Label>
-                    <Input id="invite-code" placeholder="Enter invite code" data-testid="input-invite-code" />
+                    <Input 
+                      id="invite-code" 
+                      placeholder="Enter invite code" 
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value)}
+                      data-testid="input-invite-code" 
+                    />
                   </div>
-                  <Button onClick={handleJoinTeam} className="w-full" data-testid="button-join-team">
+                  <Button 
+                    onClick={handleJoinTeam} 
+                    className="w-full" 
+                    disabled={joinTeamMutation.isPending}
+                    data-testid="button-join-team"
+                  >
                     <UserPlus className="w-4 h-4 mr-2" />
-                    Join Team
+                    {joinTeamMutation.isPending ? "Joining..." : "Join Team"}
                   </Button>
                 </CardContent>
               </Card>

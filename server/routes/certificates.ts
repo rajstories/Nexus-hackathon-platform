@@ -49,7 +49,7 @@ router.post('/certificates', async (req, res) => {
 // GET /api/certificates/check/:teamId - Check certificate eligibility
 router.get('/certificates/check/:teamId', async (req, res) => {
   try {
-    const teamId = parseInt(req.params.teamId);
+    const teamId = req.params.teamId;
     
     // Check if team exists and get their submission status
     const teamResult = await db.execute(
@@ -57,7 +57,8 @@ router.get('/certificates/check/:teamId', async (req, res) => {
        FROM teams t
        LEFT JOIN submissions s ON t.id = s.team_id
        LEFT JOIN events e ON e.id = t.event_id
-       WHERE t.id = ${teamId}`
+       WHERE t.id = $1`,
+      [teamId]
     );
 
     if (!teamResult.rows || teamResult.rows.length === 0) {
