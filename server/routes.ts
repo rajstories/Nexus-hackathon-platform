@@ -18,6 +18,10 @@ import sponsorsRouter from "./routes/sponsors";
 import healthRouter from "./routes/health";
 import securityTestRouter from "./routes/security-test";
 import demoRouter from "./routes/demo";
+import web3Router from "./routes/web3";
+import achievementsRouter from "./routes/achievements";
+import sentimentRouter from "./routes/sentiment";
+import performanceRouter from "./routes/performance";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { 
   authRateLimit, 
@@ -71,6 +75,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Sponsors routes
   app.use('/api', sponsorsRouter);
+  
+  // Web3/NFT/POAP routes
+  app.use('/api/web3', web3Router);
+  
+  // Achievement/Gamification routes
+  app.use('/api/achievements', achievementsRouter);
+  
+  // AI Sentiment Analysis routes
+  app.use('/api/sentiment', sentimentRouter);
+  
+  // Performance Monitoring routes
+  app.use('/api/performance', performanceRouter);
   
   // Object storage routes - serve public objects/certificates
   app.get("/objects/:objectPath(*)", async (req, res) => {
