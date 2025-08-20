@@ -76,8 +76,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="text-2xl font-bold text-white">
-              Fusion<span className="text-orange-400">X</span>
-              <div className="text-xs text-slate-400 mt-1">by Advanced Platform</div>
+              <span className="text-orange-400">Nexus</span> by Fusion<span className="text-orange-400">X</span>
+              <div className="text-xs text-slate-400 mt-1">Advanced Hackathon Platform</div>
             </div>
           </div>
           <div className="hidden md:flex items-center space-x-8 text-slate-300">
@@ -121,9 +121,8 @@ export default function Home() {
                   {...fadeInUp}
                   className="text-5xl md:text-7xl font-bold leading-tight mb-6"
                 >
-                  <span className="text-white">Empower Innovation.</span><br/>
                   <span className="text-transparent bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500 bg-clip-text">
-                    Streamline Execution.
+                    Nexus
                   </span>
                 </motion.h1>
                 <motion.p 
