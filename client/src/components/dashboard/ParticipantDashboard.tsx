@@ -416,11 +416,11 @@ export function ParticipantDashboard() {
                     variant="outline" 
                     size="sm" 
                     onClick={handleLogout}
-                    data-testid="button-sign-out"
+                    data-testid="button-log-out"
                     className="text-red-600 hover:text-red-700 hover:border-red-300"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
+                    Log Out
                   </Button>
                 </div>
               </div>
