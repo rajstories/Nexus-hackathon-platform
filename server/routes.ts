@@ -15,27 +15,43 @@ import similarityRouter from "./routes/similarity";
 import certificatesRouter from "./routes/certificates";
 import analyticsRouter from "./routes/analytics";
 import sponsorsRouter from "./routes/sponsors";
+import healthRouter from "./routes/health";
+import securityTestRouter from "./routes/security-test";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { 
+  authRateLimit, 
+  uploadRateLimit, 
+  apiWriteRateLimit,
+  verifyFirebaseToken,
+  optionalAuth 
+} from "./middleware/security";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const objectStorageService = new ObjectStorageService();
-  // Authentication routes
-  app.use('/api/auth', authRouter);
   
-  // Event routes
-  app.use('/api/events', eventRouter);
+  // Health check routes (no auth required)
+  app.use('/api', healthRouter);
   
-  // Team routes
-  app.use('/api/teams', teamRouter);
+  // Security test routes (for verification)
+  app.use('/api', securityTestRouter);
   
-  // Submission routes
-  app.use('/api/submissions', submissionRouter);
+  // Authentication routes with stricter rate limiting
+  app.use('/api/auth', authRateLimit, authRouter);
   
-  // Judging routes
-  app.use('/api/judging', judgingRouter);
+  // Event routes (public read, auth for write)
+  app.use('/api/events', optionalAuth, eventRouter);
   
-  // Admin routes for judge assignment and criteria setup
-  app.use('/api/admin', adminRouter);
+  // Team routes (require auth for write operations)
+  app.use('/api/teams', optionalAuth, teamRouter);
+  
+  // Submission routes (require auth and file upload limits)
+  app.use('/api/submissions', verifyFirebaseToken, uploadRateLimit, submissionRouter);
+  
+  // Judging routes (require auth)
+  app.use('/api/judging', verifyFirebaseToken, judgingRouter);
+  
+  // Admin routes for judge assignment and criteria setup (require auth)
+  app.use('/api/admin', verifyFirebaseToken, adminRouter);
   
   // Leaderboard routes
   app.use('/api/leaderboard', leaderboardRouter);
@@ -68,8 +84,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Health check endpoint with database status
-  app.get("/api/health", async (req, res) => {
+  // Legacy health check endpoint (new one is in health router)
+  app.get("/api/health-legacy", async (req, res) => {
     try {
       // Check SQL Database
       let sqlStatus: 'ok' | 'error' = 'error';

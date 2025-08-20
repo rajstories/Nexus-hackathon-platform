@@ -48,6 +48,27 @@ Preferred communication style: Simple, everyday language.
 - **Multi-Round Evaluation**: Comprehensive judging system with weighted scoring, criteria management, and aggregate calculations.
 - **Real-time Communication**: Socket.IO integration for announcements and Q&A chat, persistent with MongoDB.
 
+# Security Implementation
+
+## API Security Features (Implemented 2025-08-20)
+- **Helmet.js**: Security headers for XSS, clickjacking, and other attacks
+- **CORS**: Strict allowlist for origins (localhost, *.replit.app, *.replit.dev)
+- **Rate Limiting**: 100 requests per 10 minutes per IP address
+- **Firebase Authentication**: Token verification on all protected routes
+- **Input Sanitization**: Automatic removal of script tags and SQL injection attempts
+- **File Upload Security**: 
+  - Size limits (50MB max)
+  - MIME type validation
+  - Blocked executable extensions (.exe, .bat, .sh, etc.)
+  - Path traversal prevention
+- **SQL Injection Prevention**: All queries use parameterized statements
+- **Disabled Headers**: x-powered-by header removed
+
+## Security Endpoints
+- `/api/health`: Public health check endpoint (no secrets exposed)
+- `/api/security/test`: Security feature verification endpoint
+- Protected routes require Firebase authentication token
+
 # External Dependencies
 
 ## Database Services

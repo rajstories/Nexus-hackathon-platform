@@ -16,14 +16,41 @@ const asyncHandler = (fn: (req: Request, res: Response, next?: NextFunction) => 
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 
-// Configure multer for file uploads
+// Configure multer for file uploads with enhanced security
 const storage = multer.memoryStorage();
 
+const ALLOWED_MIME_TYPES = [
+  'application/zip',
+  'application/x-zip-compressed',
+  'application/pdf',
+  'video/mp4',
+  'text/plain',
+  'application/json'
+];
+
+const BLOCKED_EXTENSIONS = [
+  '.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', 
+  '.jar', '.app', '.deb', '.rpm', '.dmg', '.pkg', '.run', '.msi',
+  '.dll', '.so', '.dylib', '.sh', '.bash', '.zsh', '.fish', '.ps1'
+];
+
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  // Check for blocked extensions
+  const ext = file.originalname.substring(file.originalname.lastIndexOf('.')).toLowerCase();
+  if (BLOCKED_EXTENSIONS.includes(ext)) {
+    return cb(new Error(`File extension ${ext} is not allowed for security reasons.`));
+  }
+  
   // Check MIME type
-  if (!azureBlobStorage.isAllowedMimeType(file.mimetype)) {
+  if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
     return cb(new Error(`File type ${file.mimetype} not allowed. Only ZIP, MP4, and PDF files are supported.`));
   }
+  
+  // Additional check for disguised executables
+  if (file.originalname.includes('..') || file.originalname.includes('/') || file.originalname.includes('\\')) {
+    return cb(new Error('Invalid filename detected.'));
+  }
+  
   cb(null, true);
 };
 
@@ -31,8 +58,11 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 100 * 1024 * 1024, // 100MB limit
-    fieldSize: 10 * 1024 * 1024, // 10MB field limit
+    fileSize: 50 * 1024 * 1024, // 50MB limit (reduced from 100MB for security)
+    fieldSize: 5 * 1024 * 1024, // 5MB field limit
+    files: 1, // Only 1 file per upload
+    fields: 10, // Max 10 fields
+    parts: 20 // Max 20 parts
   },
 });
 

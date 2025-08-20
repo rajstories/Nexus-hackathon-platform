@@ -2,10 +2,32 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { connectMongoDB } from "./db/mongo";
+import { 
+  securityHeaders, 
+  corsMiddleware, 
+  generalRateLimit,
+  sanitizeInput 
+} from "./middleware/security";
 
 const app = express();
+
+// Disable x-powered-by header
+app.disable('x-powered-by');
+
+// Apply security middleware FIRST (but skip CORS as Vite handles it)
+app.use(securityHeaders);
+// Skip CORS middleware - let Vite handle it in development
+if (process.env.NODE_ENV === 'production') {
+  app.use(corsMiddleware);
+}
+app.use(generalRateLimit);
+
+// Then body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Input sanitization after body parsing
+app.use(sanitizeInput);
 
 app.use((req, res, next) => {
   const start = Date.now();
