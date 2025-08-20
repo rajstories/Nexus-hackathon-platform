@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,21 +34,37 @@ import { SponsorManagement } from '@/components/SponsorManagement';
 
 export function OrganizerDashboard() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [trackDialogOpen, setTrackDialogOpen] = useState(false);
   const [announcementDialogOpen, setAnnouncementDialogOpen] = useState(false);
   const [judgeDialogOpen, setJudgeDialogOpen] = useState(false);
 
-  // Mock data - in real app, fetch from API
-  const currentEvent = {
-    id: 1,
-    name: "Fusion X Hackathon 2025",
-    description: "48-hour innovation challenge",
-    startDate: "2025-08-25",
-    endDate: "2025-08-27",
+  // Fetch events created by this organizer
+  const { data: eventsData, isLoading: eventsLoading } = useQuery({
+    queryKey: ["/api/events/organizer"]
+  });
+
+  const events = eventsData?.data || [];
+  const currentEvent = events.length > 0 ? {
+    id: events[0].id,
+    name: events[0].title,
+    description: events[0].description,
+    startDate: events[0].start_at,
+    endDate: events[0].end_at,
     status: "upcoming",
     participants: 156,
     teams: 42,
+    submissions: 0
+  } : {
+    id: '',
+    name: "No events created yet",
+    description: "Create your first event to get started",
+    startDate: '',
+    endDate: '',
+    status: "none",
+    participants: 0,
+    teams: 0,
     submissions: 0
   };
 
@@ -69,12 +87,58 @@ export function OrganizerDashboard() {
     { id: 3, team: "Innovation Squad", project: "DeFi Protocol", track: "Web3", submitted: "2025-08-27 09:45", status: "submitted" }
   ];
 
+  // Create event mutation
+  const createEventMutation = useMutation({
+    mutationFn: async (eventData: any) => {
+      return apiRequest("/api/events", {
+        method: "POST",
+        body: JSON.stringify(eventData),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/events/organizer"] });
+      toast({
+        title: "Event Created",
+        description: "New hackathon event has been created successfully!"
+      });
+      setEventDialogOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const [newEventData, setNewEventData] = useState({
+    title: '',
+    description: '',
+    mode: 'hybrid',
+    startDate: '',
+    endDate: ''
+  });
+
   const handleCreateEvent = () => {
-    toast({
-      title: "Event Created",
-      description: "New hackathon event has been created successfully!"
-    });
-    setEventDialogOpen(false);
+    if (!newEventData.title || !newEventData.description || !newEventData.startDate || !newEventData.endDate) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const eventData = {
+      title: newEventData.title,
+      description: newEventData.description,
+      mode: newEventData.mode,
+      start_at: newEventData.startDate,
+      end_at: newEventData.endDate
+    };
+    
+    createEventMutation.mutate(eventData);
   };
 
   const handleCreateTrack = () => {
@@ -182,24 +246,53 @@ export function OrganizerDashboard() {
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="event-name">Event Name</Label>
-                        <Input id="event-name" placeholder="Enter event name" data-testid="input-event-name" />
+                        <Input 
+                          id="event-name" 
+                          placeholder="Enter event name" 
+                          data-testid="input-event-name"
+                          value={newEventData.title}
+                          onChange={(e) => setNewEventData({...newEventData, title: e.target.value})}
+                        />
                       </div>
                       <div>
                         <Label htmlFor="event-description">Description</Label>
-                        <Textarea id="event-description" placeholder="Describe your event" data-testid="input-event-description" />
+                        <Textarea 
+                          id="event-description" 
+                          placeholder="Describe your event" 
+                          data-testid="input-event-description"
+                          value={newEventData.description}
+                          onChange={(e) => setNewEventData({...newEventData, description: e.target.value})}
+                        />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="start-date">Start Date</Label>
-                          <Input id="start-date" type="datetime-local" data-testid="input-start-date" />
+                          <Input 
+                            id="start-date" 
+                            type="datetime-local" 
+                            data-testid="input-start-date"
+                            value={newEventData.startDate}
+                            onChange={(e) => setNewEventData({...newEventData, startDate: e.target.value})}
+                          />
                         </div>
                         <div>
                           <Label htmlFor="end-date">End Date</Label>
-                          <Input id="end-date" type="datetime-local" data-testid="input-end-date" />
+                          <Input 
+                            id="end-date" 
+                            type="datetime-local" 
+                            data-testid="input-end-date"
+                            value={newEventData.endDate}
+                            onChange={(e) => setNewEventData({...newEventData, endDate: e.target.value})}
+                          />
                         </div>
                       </div>
-                      <Button onClick={handleCreateEvent} className="w-full" data-testid="button-submit-event">
-                        Create Event
+                      <Button 
+                        onClick={handleCreateEvent} 
+                        className="w-full" 
+                        data-testid="button-submit-event"
+                        disabled={createEventMutation.isPending}
+                      >
+                        {createEventMutation.isPending ? "Creating..." : "Create Event"}
                       </Button>
                     </div>
                   </DialogContent>

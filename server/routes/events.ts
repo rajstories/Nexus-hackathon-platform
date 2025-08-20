@@ -158,6 +158,20 @@ router.post('/:id/judges',
   })
 );
 
+// GET /api/events/organizer - Get events by organizer (organizer only)
+router.get('/organizer',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const events = await EventRepository.findByOrganizerId(req.user!.userId);
+    
+    res.json({
+      success: true,
+      data: events
+    });
+  })
+);
+
 // GET /api/events/:id - Get event with tracks and judges
 router.get('/:id',
   verifyFirebaseToken,
