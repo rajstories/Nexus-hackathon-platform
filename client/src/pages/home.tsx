@@ -587,9 +587,9 @@ export default function Home() {
                     {/* Animated background gradient */}
                     <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
-                    <div className="p-8 text-center relative z-10">
+                    <div className="p-8 pt-12 text-center relative z-10">
                       <motion.div 
-                        className="absolute -top-4 left-1/2 transform -translate-x-1/2"
+                        className="absolute -top-2 left-1/2 transform -translate-x-1/2"
                         whileHover={{ scale: 1.2, rotate: 360 }}
                         transition={{ duration: 0.5 }}
                       >
