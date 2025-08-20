@@ -130,21 +130,21 @@ export default function Home() {
                   {...fadeInUp}
                   className="text-xl md:text-2xl text-slate-300 font-light leading-relaxed mb-8"
                 >
-                  The end-to-end hackathon ecosystem for <span className="text-orange-400 font-semibold">organizers</span>, <span className="text-blue-400 font-semibold">participants</span>, and <span className="text-green-400 font-semibold">judges</span>. 
-                  Host scalable events, build groundbreaking projects, and discover top talent—all on one powerful platform.
+                  Complete hackathon ecosystem for <span className="text-orange-400 font-semibold">organizers</span>, <span className="text-blue-400 font-semibold">participants</span>, and <span className="text-green-400 font-semibold">judges</span>. 
+                  Host events, build projects, discover talent.
                 </motion.p>
                 <motion.div className="flex flex-wrap gap-6 mb-8 text-sm">
                   <div className="flex items-center gap-2 text-slate-400">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span>Powering 500+ Global Innovation Events</span>
+                    <span>500+ Global Events</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-400">
                     <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                    <span>Facilitating Over $2M in Prize Distribution</span>
+                    <span>$2M+ Prize Distribution</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-400">
                     <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                    <span>Trusted by 50+ Industry-Leading Partners</span>
+                    <span>50+ Industry Partners</span>
                   </div>
                 </motion.div>
               </div>
@@ -188,48 +188,141 @@ export default function Home() {
                   {...pulseAnimation}
                   className="relative transform rotate-12 hover:rotate-6 transition-transform duration-300"
                 >
-                  <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border-4 border-orange-400/30 p-6 shadow-2xl">
-                    <div className="bg-slate-900 rounded h-48 border border-slate-700 p-4">
+                  <motion.div 
+                    className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border-4 border-orange-400/30 p-6 shadow-2xl"
+                    whileHover={{ scale: 1.02, rotateX: 5 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <motion.div 
+                      className="bg-slate-900 rounded h-48 border border-slate-700 p-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.8 }}
+                    >
                       {/* Real-Time Event Intelligence */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="text-orange-400 font-bold text-lg">Your Command Center</div>
+                        <motion.div 
+                          className="text-orange-400 font-bold text-lg"
+                          animate={{ opacity: [0.7, 1, 0.7] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          Your Command Center
+                        </motion.div>
                         <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
                       </div>
                       <div className="space-y-3">
-                        <div className="flex items-center gap-3">
+                        <motion.div 
+                          className="flex items-center gap-3"
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ delay: 0.5, duration: 0.5 }}
+                        >
                           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-xs">🏆</div>
                           <div className="text-white text-sm">AI Innovators Challenge</div>
-                          <div className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold animate-pulse">LIVE NOW</div>
-                        </div>
-                        <div className="flex items-center gap-3">
+                          <motion.div 
+                            className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full font-bold"
+                            animate={{ scale: [1, 1.1, 1] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          >
+                            LIVE NOW
+                          </motion.div>
+                        </motion.div>
+                        <motion.div 
+                          className="flex items-center gap-3"
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ delay: 0.7, duration: 0.5 }}
+                        >
                           <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-xs">⚡</div>
                           <div className="text-white text-sm">Web3 Builder Bootcamp</div>
-                          <div className="ml-auto text-yellow-400 text-xs">2 Days</div>
-                        </div>
-                        <div className="flex items-center gap-3">
+                          <motion.div 
+                            className="ml-auto text-yellow-400 text-xs"
+                            animate={{ opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            2 Days
+                          </motion.div>
+                        </motion.div>
+                        <motion.div 
+                          className="flex items-center gap-3"
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ delay: 0.9, duration: 0.5 }}
+                        >
                           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-xs">🧠</div>
                           <div className="text-white text-sm">Projects Needing Review</div>
-                          <div className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold">12</div>
-                        </div>
+                          <motion.div 
+                            className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold"
+                            animate={{ 
+                              scale: [1, 1.2, 1],
+                              rotate: [0, 5, -5, 0]
+                            }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                          >
+                            12
+                          </motion.div>
+                        </motion.div>
                       </div>
-                      <div className="mt-4 text-center">
-                        <div className="text-orange-400 text-2xl font-bold">247</div>
+                      <motion.div 
+                        className="mt-4 text-center"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 1.1, duration: 0.5 }}
+                      >
+                        <motion.div 
+                          className="text-orange-400 text-2xl font-bold"
+                          animate={{ 
+                            textShadow: [
+                              "0 0 0px #f97316",
+                              "0 0 10px #f97316",
+                              "0 0 0px #f97316"
+                            ]
+                          }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          247
+                        </motion.div>
                         <div className="text-slate-400 text-xs">Teams Innovating</div>
-                      </div>
-                    </div>
+                      </motion.div>
+                    </motion.div>
                     <div className="mt-4 h-2 bg-slate-700 rounded overflow-hidden">
                       <motion.div 
                         className="h-full bg-gradient-to-r from-orange-400 to-yellow-500 rounded"
-                        animate={{ width: ["0%", "75%"] }}
-                        transition={{ duration: 2, ease: "easeOut" }}
+                        animate={{ 
+                          width: ["0%", "75%", "70%", "75%"],
+                          opacity: [0.8, 1, 0.9, 1]
+                        }}
+                        transition={{ 
+                          duration: 3, 
+                          ease: "easeInOut",
+                          repeat: Infinity,
+                          repeatType: "reverse"
+                        }}
                       ></motion.div>
                     </div>
-                    <div className="mt-2 flex gap-2">
-                      <div className="h-1 bg-orange-400 rounded flex-1"></div>
-                      <div className="h-1 bg-yellow-400 rounded flex-1"></div>
-                      <div className="h-1 bg-slate-700 rounded flex-1"></div>
-                    </div>
-                  </div>
+                    <motion.div 
+                      className="mt-2 flex gap-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.5, duration: 0.5 }}
+                    >
+                      <motion.div 
+                        className="h-1 bg-orange-400 rounded flex-1"
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+                      ></motion.div>
+                      <motion.div 
+                        className="h-1 bg-yellow-400 rounded flex-1"
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+                      ></motion.div>
+                      <motion.div 
+                        className="h-1 bg-slate-700 rounded flex-1"
+                        animate={{ opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ duration: 1.5, repeat: Infinity, delay: 1 }}
+                      ></motion.div>
+                    </motion.div>
+                  </motion.div>
                   <div className="bg-gradient-to-br from-orange-500 to-yellow-500 h-4 rounded-b-lg mx-4"></div>
                   <div className="bg-slate-800 h-6 w-16 mx-auto rounded-b-lg"></div>
                 </motion.div>
@@ -283,16 +376,38 @@ export default function Home() {
                 </motion.div>
                 
                 <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.3, duration: 0.5 }}
+                  initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: [0, -5, 0], 
+                    scale: 1
+                  }}
+                  transition={{ 
+                    delay: 1.3, 
+                    duration: 0.5,
+                    y: {
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }
+                  }}
                   className="absolute top-32 left-8 bg-slate-800/80 backdrop-blur-sm border border-orange-400/30 rounded-lg p-3 shadow-lg"
                 >
-                  <div className="text-orange-400 text-sm font-semibold">Real-Time Intelligence</div>
+                  <motion.div 
+                    className="text-orange-400 text-sm font-semibold"
+                    animate={{ opacity: [0.8, 1, 0.8] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    Live Intelligence
+                  </motion.div>
                   <div className="text-white text-xs">247 Active Builders</div>
                   <div className="flex items-center gap-1 mt-1">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-green-400 text-xs">Live Activity Feed</span>
+                    <motion.div 
+                      className="w-2 h-2 bg-green-400 rounded-full"
+                      animate={{ scale: [1, 1.3, 1] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    ></motion.div>
+                    <span className="text-green-400 text-xs">Real-time</span>
                   </div>
                 </motion.div>
                 
@@ -329,7 +444,7 @@ export default function Home() {
               The Complete <span className="text-orange-400">Innovation Platform</span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Experience the pulse of your hackathon with real-time intelligence, dynamic leaderboards, and comprehensive event management.
+              Real-time intelligence, dynamic leaderboards, comprehensive event management.
             </p>
           </motion.div>
 
@@ -340,43 +455,43 @@ export default function Home() {
             {[
               {
                 icon: <Trophy className="h-8 w-8 text-yellow-500" />,
-                title: "Complete Event Management",
-                description: "Create, manage, and run hackathons from registration to prize distribution. Handle thousands of participants with ease.",
+                title: "Event Management",
+                description: "Create and run hackathons from registration to prizes. Handle thousands of participants effortlessly.",
                 badge: "ORGANIZERS",
                 stats: "500+ Events"
               },
               {
                 icon: <Brain className="h-8 w-8 text-purple-500" />,
                 title: "AI-Powered Judging",
-                description: "Smart evaluation system with automated scoring, bias detection, and real-time feedback for fair competition.",
+                description: "Smart evaluation with automated scoring, bias detection, and real-time feedback.",
                 badge: "AI-POWERED",
                 stats: "98% Accuracy"
               },
               {
                 icon: <Rocket className="h-8 w-8 text-orange-500" />,
-                title: "Team Collaboration Hub",
-                description: "Built-in project management, code sharing, real-time chat, and collaborative workspaces for teams.",
+                title: "Team Collaboration",
+                description: "Project management, code sharing, real-time chat, and collaborative workspaces.",
                 badge: "PRODUCTIVITY",
                 stats: "10K+ Teams"
               },
               {
                 icon: <Award className="h-8 w-8 text-green-500" />,
                 title: "Blockchain Certificates",
-                description: "Web3-verified achievements and NFT badges that participants can showcase in their portfolio forever.",
+                description: "Web3-verified achievements and NFT badges for permanent portfolio showcase.",
                 badge: "WEB3",
                 stats: "50K+ Issued"
               },
               {
                 icon: <BarChart3 className="h-8 w-8 text-blue-500" />,
-                title: "Live Analytics Dashboard",
-                description: "Real-time insights on participation, project submissions, and engagement metrics for data-driven decisions.",
+                title: "Live Analytics",
+                description: "Real-time insights on participation, submissions, and engagement for data-driven decisions.",
                 badge: "INSIGHTS",
                 stats: "Real-time"
               },
               {
                 icon: <MessageCircle className="h-8 w-8 text-indigo-500" />,
                 title: "Community & Mentorship",
-                description: "Connect with mentors, sponsors, and peers. Built-in Q&A, announcements, and networking features.",
+                description: "Connect with mentors, sponsors, and peers. Built-in Q&A and networking features.",
                 badge: "COMMUNITY",
                 stats: "1000+ Mentors"
               }
@@ -553,8 +668,8 @@ export default function Home() {
               </span>
             </h2>
             <p className="text-xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Join the global ecosystem of innovation leaders. Whether you're organizing enterprise hackathons or discovering breakthrough talent, 
-              FusionX provides the intelligence and infrastructure you need to drive meaningful outcomes.
+              Join innovation leaders worldwide. Organize enterprise hackathons, discover breakthrough talent, 
+              drive meaningful outcomes.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
               <Button 
