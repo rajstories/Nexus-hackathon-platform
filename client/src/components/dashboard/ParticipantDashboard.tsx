@@ -49,7 +49,11 @@ export function ParticipantDashboard() {
   });
 
   // Get the first team (assuming user can only be in one team per event for now)
-  const currentTeam = userTeams && Array.isArray(userTeams) && userTeams.length > 0 ? userTeams[0] : null;
+  // The API returns data in format: { data: { teams: [...], total_teams: number }, message: string }
+  console.log('Raw userTeams response:', userTeams);
+  const teamsData = userTeams?.data?.teams || userTeams?.teams || [];
+  const currentTeam = Array.isArray(teamsData) && teamsData.length > 0 ? teamsData[0] : null;
+  console.log('Current team:', currentTeam);
 
   // Show loading while auth is being determined
   if (loading) {
