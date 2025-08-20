@@ -756,6 +756,245 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Technology Section */}
+      <section id="tech" className="py-24 bg-slate-800">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Powered by <span className="text-orange-400">Advanced Technology</span>
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              Built on cutting-edge tech stack for maximum performance, security, and scalability
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <motion.div 
+              className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 text-center"
+              whileHover={{ scale: 1.05, borderColor: '#3b82f6' }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-white">JS</span>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Next.js & React</h3>
+              <p className="text-slate-400 text-sm">Modern frontend with server-side rendering</p>
+            </motion.div>
+
+            <motion.div 
+              className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 text-center"
+              whileHover={{ scale: 1.05, borderColor: '#10b981' }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-white">DB</span>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">PostgreSQL & MongoDB</h3>
+              <p className="text-slate-400 text-sm">Hybrid database architecture</p>
+            </motion.div>
+
+            <motion.div 
+              className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 text-center"
+              whileHover={{ scale: 1.05, borderColor: '#f59e0b' }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <WandSparkles className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">AI & Machine Learning</h3>
+              <p className="text-slate-400 text-sm">Smart judging and similarity detection</p>
+            </motion.div>
+
+            <motion.div 
+              className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 text-center"
+              whileHover={{ scale: 1.05, borderColor: '#8b5cf6' }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Shield className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Web3 & Blockchain</h3>
+              <p className="text-slate-400 text-sm">NFT certificates and decentralized features</p>
+            </motion.div>
+          </div>
+
+          <motion.div 
+            className="mt-16 grid md:grid-cols-2 gap-12 items-center"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            viewport={{ once: true }}
+          >
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-6">Enterprise-Grade Infrastructure</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <span className="text-slate-300">99.9% Uptime SLA</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <span className="text-slate-300">Auto-scaling Azure deployment</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                  <span className="text-slate-300">Real-time WebSocket connections</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                  <span className="text-slate-300">Advanced security protocols</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 rounded-xl p-8">
+              <h4 className="text-lg font-semibold text-white mb-4">Performance Metrics</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Response Time</span>
+                  <span className="text-green-400 font-semibold">&lt;100ms</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Concurrent Users</span>
+                  <span className="text-blue-400 font-semibold">10,000+</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Data Processing</span>
+                  <span className="text-orange-400 font-semibold">Real-time</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Security Score</span>
+                  <span className="text-purple-400 font-semibold">A+ Grade</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section id="about" className="py-24 bg-slate-900/50">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              About <span className="text-orange-400">Nexus</span>
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              Transforming the hackathon ecosystem with innovation, technology, and community
+            </p>
+          </motion.div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-2xl font-bold text-white mb-6">Our Mission</h3>
+              <p className="text-lg text-slate-300 mb-6 leading-relaxed">
+                Nexus by FusionX is designed to revolutionize how hackathons are organized, participated in, and judged. 
+                We bridge the gap between innovative ideas and successful execution through cutting-edge technology.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full mt-2"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">For Organizers</h4>
+                    <p className="text-slate-400 text-sm">Complete event management with real-time analytics and automated workflows</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">For Participants</h4>
+                    <p className="text-slate-400 text-sm">Seamless collaboration tools, project management, and networking opportunities</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">For Judges</h4>
+                    <p className="text-slate-400 text-sm">AI-powered evaluation tools with bias detection and comprehensive scoring</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700 rounded-2xl p-8"
+            >
+              <h4 className="text-xl font-bold text-white mb-6">Platform Statistics</h4>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-400 mb-2">500+</div>
+                  <div className="text-slate-400 text-sm">Global Events</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400 mb-2">50K+</div>
+                  <div className="text-slate-400 text-sm">Participants</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-400 mb-2">$2M+</div>
+                  <div className="text-slate-400 text-sm">Prize Pool</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-400 mb-2">95%</div>
+                  <div className="text-slate-400 text-sm">Success Rate</div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.div 
+            className="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border border-orange-400/20 rounded-2xl p-8 text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            viewport={{ once: true }}
+          >
+            <h3 className="text-2xl font-bold text-white mb-4">Built for the Future</h3>
+            <p className="text-slate-300 mb-6 max-w-3xl mx-auto">
+              Nexus isn't just a platform – it's an ecosystem that evolves with the community. 
+              From Web3 integration to AI-powered insights, we're building the future of collaborative innovation.
+            </p>
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2 text-slate-400">
+                <Award className="h-4 w-4 text-yellow-400" />
+                <span>Award-Winning Platform</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-400">
+                <Shield className="h-4 w-4 text-blue-400" />
+                <span>Enterprise Security</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-400">
+                <Brain className="h-4 w-4 text-purple-400" />
+                <span>AI-Enhanced Experience</span>
+              </div>
+              <div className="flex items-center gap-2 text-slate-400">
+                <Zap className="h-4 w-4 text-orange-400" />
+                <span>Lightning Fast</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Contact Section */}
       <section id="contact" className="py-24 bg-slate-900">
         <div className="max-w-4xl mx-auto px-6 text-center">
