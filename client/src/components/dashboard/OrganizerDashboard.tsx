@@ -27,6 +27,7 @@ import {
   Shield
 } from "lucide-react";
 import { SimilarityPanel } from '@/components/SimilarityPanel';
+import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 
 export function OrganizerDashboard() {
   const { toast } = useToast();
@@ -113,8 +114,9 @@ export function OrganizerDashboard() {
       </div>
 
       <Tabs defaultValue="event" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="event" data-testid="tab-event">Event</TabsTrigger>
+          <TabsTrigger value="analytics" data-testid="tab-analytics">Analytics</TabsTrigger>
           <TabsTrigger value="tracks" data-testid="tab-tracks">Tracks</TabsTrigger>
           <TabsTrigger value="announcements" data-testid="tab-announcements">Announcements</TabsTrigger>
           <TabsTrigger value="judges" data-testid="tab-judges">Judges</TabsTrigger>
@@ -228,6 +230,10 @@ export function OrganizerDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <AnalyticsDashboard eventId={currentEvent.id.toString()} />
         </TabsContent>
 
         <TabsContent value="tracks" className="space-y-6">

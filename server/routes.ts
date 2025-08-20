@@ -13,6 +13,7 @@ import adminRouter from "./routes/admin";
 import leaderboardRouter from "./routes/leaderboard";
 import similarityRouter from "./routes/similarity";
 import certificatesRouter from "./routes/certificates";
+import analyticsRouter from "./routes/analytics";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -43,6 +44,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Certificates routes
   app.use('/api', certificatesRouter);
+  
+  // Analytics routes
+  app.use('/api', analyticsRouter);
   
   // Object storage routes - serve public objects/certificates
   app.get("/objects/:objectPath(*)", async (req, res) => {
