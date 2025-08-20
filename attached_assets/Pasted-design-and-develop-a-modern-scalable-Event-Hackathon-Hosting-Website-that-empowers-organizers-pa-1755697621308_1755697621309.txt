@@ -1,0 +1,29 @@
+design and develop a modern, scalable Event & Hackathon Hosting Website that empowers organizers, participants, and judges with smooth workflows and real-time engagement.
+Core Features (Mandatory)
+●	Event Creation & Management – Organizers can configure events with theme, tracks, rules, timeline, prizes, and sponsors; supports online & offline events.
+●	Registration & Teaming – Easy registration (individuals/teams), team formation & invites, authentication system (email/social login).
+●	Project Submission & Evaluation – Participants upload projects (docs, GitHub, video); judges review, score, and give feedback; support multiple rounds.
+●	Communication & Updates – Real-time announcements, reminders, and Q&A channels.
+●	Role-based Dashboards – Participants: manage teams & submissions; Organizers: manage events & announcements; Judges: review & score projects.
+Tech Stack Requirements
+●	Azure Database (SQL / Cosmos DB) – for secure structured storage.
+●	MongoDB – for flexible unstructured data storage (submissions, announcements, chats).
+●	Azure Cloud Deployment – host using Azure Web App, Functions, Storage, etc.
+Bonus Features (Optional but Highly Valued)
+●	AI-based project plagiarism/similarity detection.
+●	Automated certificate generation for participants.
+●	Sponsor & Partner showcase integration.
+●	Analytics dashboard for organizers.
+●	Web3-based Proof of Participation (POAP) / NFT badges.
+●	Integrated real-time leaderboard.
+Judging Criteria
+●	Innovation & Creativity – uniqueness of solution and features.
+●	Functionality – completeness and reliability of workflows.
+●	Scalability – ability to handle multiple events and 1000+ users.
+●	Tech Integration – efficient use of Azure Database + MongoDB.
+●	 UI/UX – clarity, responsiveness, and user-friendliness.
+Deliverables
+●	Live Demo – Hosted on Azure.
+●	GitHub Repository – Clean, open for review.
+●	Documentation – Short report covering features, architecture, and tech stack.
+The goal is to create a platform that is not just an event manager, but a complete ecosystem for innovation, making hackathons more transparent, interactive, and impactful.
