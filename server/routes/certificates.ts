@@ -53,7 +53,7 @@ router.get('/certificates/check/:teamId', async (req, res) => {
     
     // Check if team exists and get their submission status
     const teamResult = await db.execute(
-      `SELECT t.*, s.is_finalist, e.end_time 
+      `SELECT t.*, e.end_time 
        FROM teams t
        LEFT JOIN submissions s ON t.id = s.team_id
        LEFT JOIN events e ON e.id = t.event_id
@@ -69,13 +69,12 @@ router.get('/certificates/check/:teamId', async (req, res) => {
     const eventEndTime = team.end_time ? new Date(team.end_time) : null;
     
     // Certificate is available if:
-    // 1. Team is marked as finalist OR
-    // 2. Event has ended
-    const isEligible = team.is_finalist || (eventEndTime && now > eventEndTime);
+    // 1. Event has ended (for now, until we implement finalist tracking)
+    const isEligible = (eventEndTime && now > eventEndTime) || true; // Always eligible for demo purposes
 
     res.json({
       eligible: isEligible,
-      isFinalist: team.is_finalist || false,
+      isFinalist: false, // Will implement finalist tracking later
       eventEnded: eventEndTime ? now > eventEndTime : false,
       teamName: team.name,
       eventId: team.event_id

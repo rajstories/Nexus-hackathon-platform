@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   User, 
   Users, 
@@ -26,16 +27,36 @@ import { CertificateDownload } from '@/components/CertificateDownload';
 
 export function ParticipantDashboard() {
   const { toast } = useToast();
+  const { user, loading } = useAuth();
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
 
-  // Mock data - in real app, fetch from API
+  // Show loading while auth is being determined
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Use real user data from Firebase auth
   const profile = {
-    name: "Alex Chen",
-    email: "alex@example.com",
-    school: "MIT",
-    skills: ["React", "Node.js", "Python", "UI/UX"],
-    team: null // or team object if in a team
+    name: user?.displayName || "User",
+    email: user?.email || "No email",
+    school: "Not specified", // Can be added to user profile later
+    skills: ["React", "Node.js", "Python", "UI/UX"], // Default skills - can be made dynamic later
+    team: null, // Will be fetched from API later
+    photoURL: user?.photoURL
+  };
+
+  const getUserInitials = (name: string, email: string) => {
+    if (name && name !== "User") {
+      return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    return email.slice(0, 2).toUpperCase();
   };
 
   const eventTimeline = [
@@ -102,8 +123,8 @@ export function ParticipantDashboard() {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Avatar className="w-16 h-16">
-                  <AvatarImage src="/placeholder-avatar.jpg" />
-                  <AvatarFallback>AC</AvatarFallback>
+                  <AvatarImage src={profile.photoURL || undefined} />
+                  <AvatarFallback>{getUserInitials(profile.name, profile.email)}</AvatarFallback>
                 </Avatar>
                 <div className="space-y-1">
                   <h3 className="text-lg font-semibold" data-testid="text-username">{profile.name}</h3>
