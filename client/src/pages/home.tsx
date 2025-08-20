@@ -569,33 +569,82 @@ export default function Home() {
             ].map((step, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.2, duration: 0.8 }}
+                initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: index * 0.2, duration: 0.8, ease: "easeOut" }}
                 viewport={{ once: true }}
-                className="relative"
+                className="relative group"
               >
-                <Card className="bg-slate-800/50 border-slate-700 hover:border-orange-400/50 transition-all h-full">
-                  <div className="p-8 text-center relative">
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div className="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                        {step.step}
-                      </div>
+                <motion.div
+                  whileHover={{ 
+                    y: -15, 
+                    scale: 1.05,
+                    rotateY: 5
+                  }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  <Card className="bg-slate-800/50 border-slate-700 hover:border-orange-400/70 hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 h-full relative overflow-hidden">
+                    {/* Animated background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="p-8 text-center relative z-10">
+                      <motion.div 
+                        className="absolute -top-4 left-1/2 transform -translate-x-1/2"
+                        whileHover={{ scale: 1.2, rotate: 360 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg">
+                          {step.step}
+                        </div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        className={`text-5xl mb-6 p-4 rounded-full bg-gradient-to-r ${step.color} w-fit mx-auto mt-4 shadow-lg`}
+                        whileHover={{ 
+                          scale: 1.1, 
+                          rotate: [0, -10, 10, 0],
+                          boxShadow: "0 0 30px rgba(249, 115, 22, 0.4)"
+                        }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        {step.icon}
+                      </motion.div>
+                      
+                      <motion.h3 
+                        className="text-xl font-bold text-white mb-4 group-hover:text-orange-400 transition-colors duration-300"
+                        whileHover={{ scale: 1.05 }}
+                      >
+                        {step.title}
+                      </motion.h3>
+                      
+                      <motion.p 
+                        className="text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors duration-300"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        {step.desc}
+                      </motion.p>
                     </div>
-                    <div className={`text-5xl mb-6 p-4 rounded-full bg-gradient-to-r ${step.color} w-fit mx-auto mt-4`}>
-                      {step.icon}
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-4">{step.title}</h3>
-                    <p className="text-slate-400 leading-relaxed">{step.desc}</p>
-                  </div>
-                </Card>
+                    
+                    {/* Animated border glow */}
+                    <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-orange-500 via-yellow-500 to-orange-500 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300 -z-10" />
+                  </Card>
+                </motion.div>
+                
+                {/* Enhanced connector line */}
                 {index < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
-                    <div className="w-8 h-0.5 bg-gradient-to-r from-orange-400 to-yellow-500"></div>
-                  </div>
+                  <motion.div 
+                    className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 z-20"
+                    initial={{ width: 0 }}
+                    whileInView={{ width: "2rem" }}
+                    transition={{ delay: (index + 1) * 0.3, duration: 0.8 }}
+                  >
+                    <div className="h-0.5 bg-gradient-to-r from-orange-400 to-yellow-500 relative">
+                      <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+                    </div>
+                  </motion.div>
                 )}
               </motion.div>
-            ))}
+            ))
           </div>
         </div>
       </section>
@@ -614,7 +663,7 @@ export default function Home() {
               Powering the Future of <span className="text-orange-400">Innovation</span>
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-              Experience the metrics that demonstrate FusionX's impact on the global innovation ecosystem.
+              Experience the metrics that demonstrate Nexus's impact on the global innovation ecosystem.
             </p>
           </motion.div>
 
@@ -712,7 +761,7 @@ export default function Home() {
           <div className="text-center">
             <div className="mb-6">
               <h3 className="text-2xl font-bold text-white">
-                Fusion<span className="text-orange-400">X</span>
+                <span className="text-orange-400">Nexus</span>
                 <div className="text-xs text-slate-400 mt-1">by Advanced Platform</div>
               </h3>
             </div>
@@ -726,7 +775,7 @@ export default function Home() {
             </div>
             <div className="pt-8 border-t border-slate-800">
               <p className="text-slate-500 text-sm">
-                © 2024 FusionX. Empowering innovation through advanced hackathon technology.
+                © 2025 Nexus. Empowering innovation through advanced hackathon technology.
               </p>
             </div>
           </div>
