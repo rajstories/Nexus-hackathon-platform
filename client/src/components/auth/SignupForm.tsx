@@ -6,11 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { createUserAccount, signInWithGoogle } from '@/lib/firebase';
+import { createUserAccount } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import { FcGoogle } from 'react-icons/fc';
 
 const signupSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -29,7 +27,6 @@ interface SignupFormProps {
 
 export function SignupForm({ onToggleMode }: SignupFormProps) {
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<SignupFormData>({
@@ -60,31 +57,6 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
     }
   };
 
-  const handleGoogleSignup = async () => {
-    setGoogleLoading(true);
-    try {
-      const result = await signInWithGoogle();
-      // If result is null, redirect was triggered - don't show success/error messages
-      if (result !== null) {
-        toast({
-          title: 'Welcome to Fusion X!',
-          description: 'Successfully created your account with Google.',
-        });
-      }
-      // If redirect was used, the page will reload and handle success automatically
-    } catch (error: any) {
-      // Only show error toast for non-redirect scenarios
-      if (!error.message.includes('redirect')) {
-        toast({
-          title: 'Signup failed',
-          description: error.message || 'An error occurred while creating your account with Google.',
-          variant: 'destructive',
-        });
-      }
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -93,30 +65,6 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
         <CardDescription>Join Fusion X and start your hackathon journey</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={handleGoogleSignup}
-          disabled={googleLoading}
-          data-testid="button-google-signup"
-        >
-          {googleLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <FcGoogle className="mr-2 h-4 w-4" />
-          )}
-          Continue with Google
-        </Button>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-          </div>
-        </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleEmailSignup)} className="space-y-4">
