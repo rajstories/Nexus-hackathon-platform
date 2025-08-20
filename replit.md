@@ -1,6 +1,6 @@
 # Overview
 
-"Fusion X" is a full-stack web application starter template designed for rapid development of production-ready applications. It features a React frontend, an Express.js backend, and a monorepo structure utilizing TypeScript. Key capabilities include a modern tech stack with Drizzle ORM for database operations, shadcn/ui for UI components, and TailwindCSS for styling. The application is built with comprehensive environment variable management and is ready for Azure deployment. Its vision is to provide a robust foundation for various web projects, including hackathon management systems, with features like role-based dashboards, event management, team functionalities, file submissions, multi-round evaluation, and real-time communication.
+"Fusion X" is a comprehensive hackathon management platform built with Next.js and Express.js in a hybrid architecture optimized for Azure App Service deployment. The platform features a Next.js frontend for server-side rendering and page routing, with Express.js mounted under /api for REST endpoints. Key capabilities include Firebase authentication, role-based dashboards (Participant, Organizer, Judge), event and team management, file submissions with Azure Blob Storage, multi-round evaluation system, real-time features via Socket.IO, live leaderboard, similarity detection, automated certificate generation, organizer analytics, and sponsor showcase. The architecture employs a hybrid database design using Azure SQL, MongoDB, and PostgreSQL for optimal performance and scalability.
 
 # User Preferences
 
@@ -9,18 +9,20 @@ Preferred communication style: Simple, everyday language.
 # System Architecture
 
 ## Frontend Architecture
-- **Framework**: React 18 with TypeScript and Vite
-- **Routing**: Wouter
+- **Framework**: Next.js 14 with TypeScript (Server-Side Rendering)
+- **Routing**: Next.js file-based routing (pages directory)
 - **State Management**: TanStack Query (React Query)
 - **UI Components**: shadcn/ui (built on Radix UI)
 - **Styling**: TailwindCSS with CSS variables
-- **Animations**: Framer Motion
+- **Real-time**: Socket.IO client for WebSocket communication
 
 ## Backend Architecture
-- **Runtime**: Node.js with Express.js
+- **Runtime**: Node.js with custom server.js
+- **API Layer**: Express.js mounted under /api routes
 - **Language**: TypeScript with ES modules
 - **Database ORM**: Drizzle ORM for PostgreSQL
 - **Session Management**: Connect-pg-simple for PostgreSQL session storage
+- **WebSocket**: Socket.IO with Azure-compatible configuration
 
 ## Data Storage
 - **Primary Database**: PostgreSQL (via Drizzle)
@@ -36,9 +38,10 @@ Preferred communication style: Simple, everyday language.
 - **Role-Based Access Control (RBAC)**: Implemented for specific features (e.g., organizer-only endpoints).
 
 ## Project Structure
-- **Monorepo Layout**: `client/`, `server/`, and `shared/` directories.
-- **Shared Types**: Common schema definitions in `shared/`.
-- **API Design**: RESTful endpoints with standardized error handling.
+- **Hybrid Architecture**: Next.js pages in `pages/`, Express API in `server/`, shared types in `shared/`
+- **Custom Server**: `server.js` integrates Next.js and Express on single port
+- **API Design**: RESTful endpoints under `/api/*` with standardized error handling
+- **Deployment**: Single Azure App Service deployment with WebSocket support
 
 ## Key Features
 - **Role-Based Dashboards**: Participant, Organizer, and Judge dashboards with specific functionalities.
@@ -68,6 +71,15 @@ Preferred communication style: Simple, everyday language.
 - `/api/health`: Public health check endpoint (no secrets exposed)
 - `/api/security/test`: Security feature verification endpoint
 - Protected routes require Firebase authentication token
+
+# Recent Changes (2025-08-20)
+
+## Architecture Migration to Next.js
+- **Converted from Vite+Express to Next.js+Express hybrid**: Custom server.js handles both Next.js pages and Express API
+- **Azure Deployment Ready**: GitHub Actions workflow for continuous deployment
+- **WebSocket Integration**: Socket.IO configured for Azure App Service compatibility
+- **Health Checks**: Added /health and /api/health endpoints for Azure monitoring
+- **Environment Configuration**: Adapted for Azure App Service with proper port binding
 
 # External Dependencies
 
