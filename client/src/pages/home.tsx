@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
 import { SponsorsShowcase } from "@/components/SponsorsShowcase";
+import { LiveDemoButton } from "@/components/demo/LiveDemoButton";
 import { 
   Code, 
   Server, 
@@ -146,6 +147,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.8 }}
           >
+            <LiveDemoButton />
             <Button 
               size="lg" 
               className="bg-primary hover:bg-blue-600 px-8 py-4 text-lg font-medium transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/25"

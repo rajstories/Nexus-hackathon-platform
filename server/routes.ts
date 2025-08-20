@@ -17,6 +17,7 @@ import analyticsRouter from "./routes/analytics";
 import sponsorsRouter from "./routes/sponsors";
 import healthRouter from "./routes/health";
 import securityTestRouter from "./routes/security-test";
+import demoRouter from "./routes/demo";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { 
   authRateLimit, 
@@ -34,6 +35,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Security test routes (for verification)
   app.use('/api', securityTestRouter);
+  
+  // Demo routes (public for demo purposes)
+  app.use('/api/demo', demoRouter);
   
   // Authentication routes with stricter rate limiting
   app.use('/api/auth', authRateLimit, authRouter);

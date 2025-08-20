@@ -6,6 +6,7 @@ import {
 } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { z } from 'zod';
+import { seedDemoData, clearDemoData } from '../../scripts/demo';
 
 const router = Router();
 
@@ -334,6 +335,72 @@ router.get('/events/:eventId/setup',
       res.status(500).json({
         error: 'Internal server error',
         message: 'Failed to retrieve event setup'
+      });
+    }
+  })
+);
+
+// POST /api/admin/reset-demo - Reset and reseed demo data (organizer only)
+router.post('/reset-demo',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const organizerFirebaseUid = req.user!.firebaseUid || req.user!.userId;
+      
+      // Check if this is the demo organizer
+      const [organizer] = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, organizerFirebaseUid))
+        .limit(1);
+
+      if (!organizer || organizer.role !== 'organizer') {
+        return res.status(403).json({
+          error: 'Permission denied',
+          message: 'Only organizers can reset demo data'
+        });
+      }
+
+      console.log('🔄 Resetting demo data requested by:', organizer.email);
+      
+      // Clear and reseed demo data
+      const demoData = await seedDemoData();
+      
+      // Return demo credentials and info
+      res.status(200).json({
+        success: true,
+        message: 'Demo data reset successfully',
+        data: {
+          event: {
+            id: demoData.event.id,
+            title: demoData.event.title,
+            startAt: demoData.event.startAt,
+            endAt: demoData.event.endAt
+          },
+          organizer: {
+            firebaseUid: 'demo_organizer',
+            email: 'organizer@demo.hackathon'
+          },
+          judges: demoData.judges.map((j, i) => ({
+            firebaseUid: `demo_judge_${i + 1}`,
+            email: `judge${i + 1}@demo.hackathon`,
+            name: j.name
+          })),
+          stats: {
+            participants: demoData.participants.length,
+            teams: demoData.teams.length,
+            submissions: demoData.submissions.length,
+            judges: demoData.judges.length
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('Reset demo error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to reset demo data'
       });
     }
   })
