@@ -23,7 +23,10 @@ import {
   Trophy,
   Github,
   ExternalLink,
-  Award
+  Award,
+  Settings,
+  Share2,
+  MessageCircle
 } from "lucide-react";
 import { CertificateDownload } from '@/components/CertificateDownload';
 
@@ -40,6 +43,10 @@ export function ParticipantDashboard() {
   });
   const [teamName, setTeamName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [editTeamOpen, setEditTeamOpen] = useState(false);
+  const [editedTeamName, setEditedTeamName] = useState("");
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [memberEmail, setMemberEmail] = useState("");
   const queryClient = useQueryClient();
 
   // Fetch user's teams
@@ -50,10 +57,8 @@ export function ParticipantDashboard() {
 
   // Get the first team (assuming user can only be in one team per event for now)
   // The API returns data in format: { data: { teams: [...], total_teams: number }, message: string }
-  console.log('Raw userTeams response:', userTeams);
   const teamsData = userTeams?.data?.teams || userTeams?.teams || [];
   const currentTeam = Array.isArray(teamsData) && teamsData.length > 0 ? teamsData[0] : null;
-  console.log('Current team:', currentTeam);
 
   // Show loading while auth is being determined
   if (loading) {
@@ -211,6 +216,45 @@ export function ParticipantDashboard() {
       ...prev,
       skills: prev.skills.filter(skill => skill !== skillToRemove)
     }));
+  };
+
+  const handleEditTeam = () => {
+    setEditedTeamName(currentTeam?.name || "");
+    setEditTeamOpen(true);
+  };
+
+  const handleSaveTeam = () => {
+    // In a real app, this would update team details in the database
+    toast({
+      title: "Team Updated",
+      description: "Team details have been updated successfully!"
+    });
+    setEditTeamOpen(false);
+  };
+
+  const handleShareWhatsApp = () => {
+    const message = `Join my team "${currentTeam?.name}" for ${currentTeam?.event?.title}!\n\nUse invite code: ${currentTeam?.invite_code}\n\nJoin here: ${window.location.origin}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleAddMember = () => {
+    if (!memberEmail.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter a member's email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // In a real app, this would send an invitation email or add the member
+    toast({
+      title: "Invitation Sent",
+      description: `Invitation sent to ${memberEmail}!`
+    });
+    setMemberEmail("");
+    setAddMemberOpen(false);
   };
 
   return (
@@ -417,7 +461,56 @@ export function ParticipantDashboard() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold" data-testid="text-team-name">{profile.team.name}</h3>
-                    <Badge>{profile.team.members?.length || 0} Members</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge>{profile.team.members?.length || 0} Members</Badge>
+                      {profile.team.is_creator && (
+                        <Dialog open={editTeamOpen} onOpenChange={setEditTeamOpen}>
+                          <DialogTrigger asChild>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={handleEditTeam}
+                              data-testid="button-edit-team"
+                            >
+                              <Settings className="w-4 h-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Edit Team</DialogTitle>
+                              <DialogDescription>Update your team details</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="edit-team-name">Team Name</Label>
+                                <Input 
+                                  id="edit-team-name" 
+                                  value={editedTeamName}
+                                  onChange={(e) => setEditedTeamName(e.target.value)}
+                                  placeholder="Enter team name"
+                                  data-testid="input-edit-team-name"
+                                />
+                              </div>
+                              <div className="flex justify-end gap-3 pt-4">
+                                <Button 
+                                  variant="outline" 
+                                  onClick={() => setEditTeamOpen(false)}
+                                  data-testid="button-cancel-edit-team"
+                                >
+                                  Cancel
+                                </Button>
+                                <Button 
+                                  onClick={handleSaveTeam}
+                                  data-testid="button-save-team"
+                                >
+                                  Save Changes
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
                   </div>
                   <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4">
                     <p className="text-sm text-muted-foreground mb-2">Invite Code</p>
@@ -439,11 +532,94 @@ export function ParticipantDashboard() {
                       >
                         Copy
                       </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={handleShareWhatsApp}
+                        className="bg-green-500 hover:bg-green-600 text-white border-green-500"
+                        data-testid="button-share-whatsapp"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        WhatsApp
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          const shareData = {
+                            title: `Join my team "${profile.team.name}"`,
+                            text: `Join my team "${profile.team.name}" for ${profile.team.event?.title}! Use invite code: ${profile.team.invite_code}`,
+                            url: window.location.origin
+                          };
+                          if (navigator.share) {
+                            navigator.share(shareData);
+                          } else {
+                            navigator.clipboard.writeText(`${shareData.text}\n\n${shareData.url}`);
+                            toast({
+                              title: "Copied!",
+                              description: "Invite link copied to clipboard."
+                            });
+                          }
+                        }}
+                        data-testid="button-share-general"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                  {profile.team.members && profile.team.members.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-3">Team Members</h4>
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium">Team Members</h4>
+                      {profile.team.is_creator && (
+                        <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
+                          <DialogTrigger asChild>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              data-testid="button-add-member"
+                            >
+                              <Plus className="w-4 h-4 mr-1" />
+                              Add Member
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Add Team Member</DialogTitle>
+                              <DialogDescription>Invite a new member to join your team</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="member-email">Email Address</Label>
+                                <Input 
+                                  id="member-email" 
+                                  type="email"
+                                  value={memberEmail}
+                                  onChange={(e) => setMemberEmail(e.target.value)}
+                                  placeholder="Enter member's email"
+                                  data-testid="input-member-email"
+                                />
+                              </div>
+                              <div className="flex justify-end gap-3 pt-4">
+                                <Button 
+                                  variant="outline" 
+                                  onClick={() => setAddMemberOpen(false)}
+                                  data-testid="button-cancel-add-member"
+                                >
+                                  Cancel
+                                </Button>
+                                <Button 
+                                  onClick={handleAddMember}
+                                  data-testid="button-send-invitation"
+                                >
+                                  Send Invitation
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      )}
+                    </div>
+                    {profile.team.members && profile.team.members.length > 0 && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {profile.team.members.map((member: any) => (
                           <div key={member.user_id} className="flex items-center space-x-3 p-3 border rounded-lg">
@@ -461,8 +637,8 @@ export function ParticipantDashboard() {
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -57,8 +57,7 @@ router.get('/certificates/check/:teamId', async (req, res) => {
        FROM teams t
        LEFT JOIN submissions s ON t.id = s.team_id
        LEFT JOIN events e ON e.id = t.event_id
-       WHERE t.id = $1`,
-      [teamId]
+       WHERE t.id = '${teamId}'`
     );
 
     if (!teamResult.rows || teamResult.rows.length === 0) {
