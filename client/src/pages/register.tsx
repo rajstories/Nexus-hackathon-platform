@@ -19,6 +19,7 @@ import { ArrowLeft, AlertTriangle } from "lucide-react";
 
 // Registration form validation schema
 const registrationSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().optional(),
   mobile: z.string().min(10, "Valid mobile number is required"),
@@ -62,7 +63,20 @@ export default function RegisterPage() {
   const form = useForm<RegistrationForm>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
+      email: "",
+      firstName: "",
+      lastName: "",
+      mobile: "",
       countryCode: "+91",
+      gender: "",
+      instituteName: "",
+      participantType: "",
+      domain: "",
+      course: "",
+      courseSpecialization: "",
+      graduatingYear: undefined,
+      courseDuration: "",
+      location: "",
       agreeToTerms: false,
     },
   });
@@ -149,22 +163,32 @@ export default function RegisterPage() {
             <CardContent className="space-y-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Email - Pre-filled from user account */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-300">
-                      Email<span className="text-red-400">*</span>
-                    </label>
-                    <Input
-                      value={user.email || ""}
-                      disabled
-                      className="bg-slate-700 border-slate-600 text-slate-300"
-                    />
-                  </div>
+                  {/* Email */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">
+                          Email<span className="text-red-400">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                            placeholder="your.email@example.com"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   {/* Mobile */}
                   <div className="grid grid-cols-12 gap-4">
                     <div className="col-span-12">
-                      <label className="text-sm font-medium text-slate-300">
+                      <label className="text-sm font-medium text-white">
                         Mobile<span className="text-red-400">*</span>
                       </label>
                     </div>
@@ -214,7 +238,7 @@ export default function RegisterPage() {
                     name="firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-300">
+                        <FormLabel className="text-white">
                           First Name<span className="text-red-400">*</span>
                         </FormLabel>
                         <FormControl>
@@ -235,7 +259,7 @@ export default function RegisterPage() {
                     name="lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-300">
+                        <FormLabel className="text-white">
                           Last Name (if applicable)
                         </FormLabel>
                         <FormControl>
@@ -251,7 +275,7 @@ export default function RegisterPage() {
 
                   {/* Gender */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-300">
+                    <label className="text-sm font-medium text-white">
                       Gender<span className="text-red-400">*</span>
                     </label>
                     <div className="grid grid-cols-7 gap-2">
@@ -269,7 +293,7 @@ export default function RegisterPage() {
                           }}
                         >
                           <div className="text-2xl mb-1">{option.icon}</div>
-                          <div className="text-xs text-slate-300">{option.label}</div>
+                          <div className="text-xs text-white">{option.label}</div>
                         </div>
                       ))}
                     </div>
@@ -284,7 +308,7 @@ export default function RegisterPage() {
                     name="instituteName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-300">
+                        <FormLabel className="text-white">
                           Institute Name<span className="text-red-400">*</span>
                         </FormLabel>
                         <FormControl>
@@ -301,7 +325,7 @@ export default function RegisterPage() {
 
                   {/* Type */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-300">
+                    <label className="text-sm font-medium text-white">
                       Type<span className="text-red-400">*</span>
                     </label>
                     <div className="grid grid-cols-4 gap-3">
@@ -315,7 +339,7 @@ export default function RegisterPage() {
                           }`}
                           onClick={() => form.setValue("participantType", type)}
                         >
-                          <div className="text-sm text-slate-300">{type}</div>
+                          <div className="text-sm text-white">{type}</div>
                         </div>
                       ))}
                     </div>
@@ -326,7 +350,7 @@ export default function RegisterPage() {
 
                   {/* Domain */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-300">
+                    <label className="text-sm font-medium text-white">
                       Domain<span className="text-red-400">*</span>
                     </label>
                     <div className="grid grid-cols-3 gap-3">
@@ -340,7 +364,7 @@ export default function RegisterPage() {
                           }`}
                           onClick={() => form.setValue("domain", domain)}
                         >
-                          <div className="text-sm text-slate-300">{domain}</div>
+                          <div className="text-sm text-white">{domain}</div>
                         </div>
                       ))}
                     </div>
@@ -355,7 +379,7 @@ export default function RegisterPage() {
                     name="course"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-300">Course</FormLabel>
+                        <FormLabel className="text-white">Course</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
@@ -382,7 +406,7 @@ export default function RegisterPage() {
                     name="courseSpecialization"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-300">Course Specialization</FormLabel>
+                        <FormLabel className="text-white">Course Specialization</FormLabel>
                         <FormControl>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
@@ -405,7 +429,7 @@ export default function RegisterPage() {
 
                   {/* Graduating Year */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-300">Graduating Year</label>
+                    <label className="text-sm font-medium text-white">Graduating Year</label>
                     <div className="grid grid-cols-4 gap-3">
                       {graduatingYears.map((year) => (
                         <div
@@ -417,7 +441,7 @@ export default function RegisterPage() {
                           }`}
                           onClick={() => form.setValue("graduatingYear", year)}
                         >
-                          <div className="text-sm text-slate-300">{year}</div>
+                          <div className="text-sm text-white">{year}</div>
                         </div>
                       ))}
                     </div>
@@ -425,7 +449,7 @@ export default function RegisterPage() {
 
                   {/* Course Duration */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-300">Course Duration</label>
+                    <label className="text-sm font-medium text-white">Course Duration</label>
                     <div className="grid grid-cols-4 gap-3">
                       {courseDurations.map((duration) => (
                         <div
@@ -437,7 +461,7 @@ export default function RegisterPage() {
                           }`}
                           onClick={() => form.setValue("courseDuration", duration)}
                         >
-                          <div className="text-sm text-slate-300">{duration}</div>
+                          <div className="text-sm text-white">{duration}</div>
                         </div>
                       ))}
                     </div>
@@ -449,7 +473,7 @@ export default function RegisterPage() {
                     name="location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-slate-300">
+                        <FormLabel className="text-white">
                           Location<span className="text-red-400">*</span>
                         </FormLabel>
                         <FormControl>
@@ -487,7 +511,7 @@ export default function RegisterPage() {
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
-                          <FormLabel className="text-sm text-slate-300">
+                          <FormLabel className="text-sm text-white">
                             By registering for this opportunity, you agree to share the data mentioned in this form
                             or any form henceforth on this opportunity with the organizer of this opportunity for
                             further analysis, processing, and outreach. Your data will also be used by Unstop for
