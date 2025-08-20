@@ -18,39 +18,20 @@ import { EventLivePage } from "./pages/event-live";
 import HackathonsPage from "./pages/hackathons";
 
 function Router() {
-  const { data: eventData } = useQuery({
-    queryKey: ["/api/events/1"],
-    enabled: true,
-    refetchInterval: 60000 // Refresh every minute
-  });
-
-  useAnnouncementToasts();
-
   return (
-    <>
-      {eventData && <EventStatusBar eventData={eventData} />}
-      <div className={eventData ? "pt-14" : ""}>
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/auth" component={Auth} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route path="/hackathons" component={HackathonsPage} />
-          <Route path="/register/:hackathonId?" component={RegisterPage} />
-          <Route path="/event/:eventId/live" component={EventLivePage} />
-          <Route component={NotFound} />
-        </Switch>
-      </div>
-    </>
+    <Switch>
+      <Route path="/" component={Home} />
+      <Route path="/auth" component={Auth} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/hackathons" component={HackathonsPage} />
+      <Route path="/register/:hackathonId?" component={RegisterPage} />
+      <Route path="/event/:eventId/live" component={EventLivePage} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
 function AppContent() {
-  const { data: eventData } = useQuery({
-    queryKey: ["/api/events/1"],
-    enabled: true,
-    refetchInterval: 60000 // Refresh every minute
-  });
-
   useAnnouncementToasts();
 
   // Force dark theme on mount
@@ -62,10 +43,7 @@ function AppContent() {
   return (
     <>
       <DevRoleSwitcher />
-      {eventData && <EventStatusBar eventData={eventData} />}
-      <div className={eventData ? "pt-14" : ""}>
-        <Router />
-      </div>
+      <Router />
     </>
   );
 }
