@@ -100,6 +100,7 @@ export class AzureBlobStorageService {
 
   /**
    * Upload file stream to Azure Blob Storage
+   * Optimized for Azure App Service with proper buffer management
    * @param stream File stream
    * @param blobName Unique blob name (path)
    * @param contentType MIME type
@@ -128,17 +129,26 @@ export class AzureBlobStorageService {
       // Get blob client
       const blobClient = containerClient.getBlockBlobClient(blobName);
 
-      // Upload stream
+      // Upload stream with optimized settings for Azure App Service
+      // Using 4MB buffer size and 5 parallel operations for optimal performance
       const uploadResponse = await blobClient.uploadStream(
         stream,
-        contentLength,
+        4 * 1024 * 1024, // 4MB buffer size (optimal for Azure)
         5, // Max concurrency
         {
           blobHTTPHeaders: {
             blobContentType: contentType,
+            blobCacheControl: 'public, max-age=31536000', // 1 year cache for submissions
           },
           metadata: {
             uploadedAt: new Date().toISOString(),
+            contentLength: contentLength.toString(),
+          },
+          onProgress: (progress) => {
+            // Log upload progress for large files
+            if (contentLength > 10 * 1024 * 1024) { // Files > 10MB
+              console.log(`Upload progress: ${progress.loadedBytes}/${contentLength} bytes`);
+            }
           }
         }
       );
@@ -184,8 +194,17 @@ export class AzureBlobStorageService {
     const allowedTypes = [
       'application/zip',
       'application/x-zip-compressed',
+      'application/x-zip',
+      'application/x-compressed',
+      'multipart/x-zip',
       'video/mp4',
-      'application/pdf'
+      'video/quicktime',
+      'video/x-msvideo',
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp'
     ];
     return allowedTypes.includes(mimeType.toLowerCase());
   }

@@ -342,6 +342,30 @@ class SocketService {
     }
   }
 
+  // Broadcast leaderboard update to event participants
+  broadcastLeaderboardUpdate(eventId: string, leaderboardData: any): void {
+    if (this.io) {
+      this.io.to(`event:${eventId}`).emit('leaderboard:update', {
+        eventId,
+        timestamp: new Date().toISOString(),
+        data: leaderboardData
+      });
+      console.log(`Broadcasted leaderboard update to event ${eventId}`);
+    }
+  }
+
+  // Broadcast announcement to event participants
+  broadcastAnnouncement(eventId: string, announcement: AnnouncementData): void {
+    if (this.io) {
+      this.io.to(`event:${eventId}`).emit('announcement', {
+        eventId,
+        timestamp: new Date().toISOString(),
+        ...announcement
+      });
+      console.log(`Broadcasted announcement to event ${eventId}`);
+    }
+  }
+
   // Get connected users count for an event
   async getEventParticipants(eventId: string): Promise<number> {
     if (!this.io) return 0;

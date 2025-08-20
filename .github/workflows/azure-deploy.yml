@@ -8,9 +8,9 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: fusion-x-app
-  NODE_VERSION: '18.x'
-  RESOURCE_GROUP: fusion-x-rg
+  AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+  NODE_VERSION: '20.x'
+  RESOURCE_GROUP: hackerspace-rg
 
 jobs:
   build:
@@ -45,6 +45,7 @@ jobs:
         NODE_ENV: production
         VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
         VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+        VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
         VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
     
     - name: Upload artifacts
@@ -121,7 +122,8 @@ jobs:
       run: npm run db:push --force
       env:
         DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
-        AZURE_SQL_SERVER: ${{ secrets.AZURE_SQL_SERVER }}
-        AZURE_SQL_DATABASE: ${{ secrets.AZURE_SQL_DATABASE }}
-        AZURE_SQL_USER: ${{ secrets.AZURE_SQL_USER }}
-        AZURE_SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
+        PGHOST: ${{ secrets.PGHOST }}
+        PGDATABASE: ${{ secrets.PGDATABASE }}
+        PGUSER: ${{ secrets.PGUSER }}
+        PGPASSWORD: ${{ secrets.PGPASSWORD }}
+        PGPORT: ${{ secrets.PGPORT }}
