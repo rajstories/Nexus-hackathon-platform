@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { useAuth } from "../../contexts/AuthContext";
 import { ParticipantDashboard } from "./ParticipantDashboard";
 import { OrganizerDashboard } from "./OrganizerDashboard";
 import { JudgeDashboard } from "./JudgeDashboard";
@@ -125,82 +125,110 @@ export function RoleRouter() {
 
   // Default role selection screen
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4">
-          Welcome to 
-          <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent ml-3">
-            Fusion X
-          </span>
-        </h1>
-        <p className="text-xl text-muted-foreground mb-2">
-          Choose your role to access your personalized dashboard
-        </p>
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <span>Logged in as</span>
-          <Badge variant="outline" data-testid="text-current-user">
-            {user?.displayName || user?.email}
-          </Badge>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="container mx-auto px-6 py-12 max-w-7xl">
+        <div className="text-center mb-12">
+          <div className="mb-6">
+            <h1 className="text-5xl font-extrabold mb-4 tracking-tight">
+              Welcome to 
+              <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent ml-3">
+                Nexus by FusionX
+              </span>
+            </h1>
+            <p className="text-xl text-slate-600 dark:text-slate-300 mb-6 max-w-2xl mx-auto leading-relaxed">
+              Choose your role to access your personalized dashboard and unlock the full potential of hackathon management
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Logged in as</span>
+            <Badge 
+              variant="outline" 
+              className="px-3 py-1 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium"
+              data-testid="text-current-user"
+            >
+              {user?.displayName || user?.email}
+            </Badge>
+          </div>
         </div>
-      </div>
 
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        {roleOptions.map((option) => (
-          <Card 
-            key={option.role} 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 border-2 ${option.color}`}
-            onClick={() => handleRoleSelect(option.role)}
-            data-testid={`card-role-${option.role}`}
-          >
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 p-3 rounded-full bg-background">
-                <div className={option.color.split(' ')[0]}>
-                  {option.icon}
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-8 mb-12">
+          {roleOptions.map((option, index) => (
+            <Card 
+              key={option.role} 
+              className={`group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 border-0 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm overflow-hidden relative`}
+              onClick={() => handleRoleSelect(option.role)}
+              data-testid={`card-role-${option.role}`}
+              style={{ animationDelay: `${index * 150}ms` }}
+            >
+              {/* Gradient border effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ padding: '2px' }}>
+                <div className="h-full w-full bg-white dark:bg-slate-800 rounded-lg" />
+              </div>
+              
+              <div className="relative z-10">
+                <CardHeader className="text-center pb-4">
+                  <div className={`mx-auto mb-6 p-4 rounded-2xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 ${option.color.includes('blue') ? 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50' : option.color.includes('green') ? 'bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/50 dark:to-green-800/50' : 'bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/50 dark:to-purple-800/50'}`}>
+                    <div className={`${option.color.split(' ')[0]} transition-colors duration-300`}>
+                      {option.icon}
+                    </div>
+                  </div>
+                  <CardTitle className="text-2xl font-bold mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-blue-600 group-hover:bg-clip-text transition-all duration-300">
+                    {option.title}
+                  </CardTitle>
+                  <CardDescription className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                    {option.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 mr-2" />
+                      Key Features
+                    </h4>
+                    <ul className="space-y-2">
+                      {option.features.map((feature, featureIndex) => (
+                        <li 
+                          key={feature} 
+                          className="flex items-center text-sm text-slate-600 dark:text-slate-300 transition-all duration-200 hover:text-slate-800 dark:hover:text-slate-100"
+                          style={{ animationDelay: `${(index * 150) + (featureIndex * 50)}ms` }}
+                        >
+                          <div className={`w-1.5 h-1.5 rounded-full mr-3 ${option.color.includes('blue') ? 'bg-blue-500' : option.color.includes('green') ? 'bg-green-500' : 'bg-purple-500'}`} />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <Button 
+                    className={`w-full mt-6 h-12 font-semibold transition-all duration-300 group-hover:shadow-lg ${option.color.includes('blue') ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0' : option.color.includes('green') ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white border-0' : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0'}`}
+                    data-testid={`button-select-${option.role}`}
+                  >
+                    <span className="flex items-center justify-center">
+                      Select {option.title}
+                      <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  </Button>
+                </CardContent>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <div className="text-center">
+          <Card className="max-w-2xl mx-auto bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
+            <CardContent className="pt-8 pb-8">
+              <div className="mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 mb-4 shadow-lg">
+                  <Crown className="w-8 h-8 text-white" />
                 </div>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">Demo Mode Active</h3>
               </div>
-              <CardTitle className="text-xl">{option.title}</CardTitle>
-              <CardDescription className="text-sm">
-                {option.description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <h4 className="text-sm font-medium text-muted-foreground">Key Features:</h4>
-                <ul className="text-sm space-y-1">
-                  {option.features.map((feature) => (
-                    <li key={feature} className="flex items-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-current mr-2 opacity-60" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <Button 
-                className="w-full mt-4" 
-                variant="outline"
-                data-testid={`button-select-${option.role}`}
-              >
-                Select {option.title}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                In a production environment, your role would be automatically determined based on your account permissions. 
+                For this demo, you can explore any role to experience the different dashboard capabilities and features.
+              </p>
             </CardContent>
           </Card>
-        ))}
-      </div>
-
-      <div className="text-center">
-        <Card className="max-w-md mx-auto">
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground mb-4">
-              <Crown className="w-5 h-5 mx-auto mb-2" />
-              <strong>Demo Mode</strong>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              In a production environment, your role would be automatically determined based on your account permissions. 
-              For this demo, you can explore any role to see the different dashboard experiences.
-            </p>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </div>
   );
