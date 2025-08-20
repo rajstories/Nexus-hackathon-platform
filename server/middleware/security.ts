@@ -62,17 +62,25 @@ const corsOptions: cors.CorsOptions = {
 
 // Rate limiting configurations
 export const generalRateLimit = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 100, // 100 requests per 10 minutes per IP
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // 1000 requests per minute in dev, 100 in prod
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for development on localhost
+    if (process.env.NODE_ENV === 'development' && 
+        (req.ip === '127.0.0.1' || req.ip === '::1' || req.ip?.startsWith('::ffff:127.0.0.1'))) {
+      return true;
+    }
+    return false;
+  },
   handler: (req: Request, res: Response) => {
     console.log(`Rate limit exceeded for IP: ${req.ip}`);
     res.status(429).json({
       error: 'Too many requests',
       message: 'You have exceeded the rate limit. Please try again later.',
-      retryAfter: Date.now() + (10 * 60 * 1000) // 10 minutes from now
+      retryAfter: Date.now() + (1 * 60 * 1000) // 1 minute from now
     });
   }
 });

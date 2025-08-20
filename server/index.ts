@@ -11,6 +11,9 @@ import {
 
 const app = express();
 
+// Trust proxy for rate limiting and security  
+app.set('trust proxy', 1);
+
 // Disable x-powered-by header
 app.disable('x-powered-by');
 
