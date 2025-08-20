@@ -58,17 +58,24 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
-      await signInWithGoogle();
-      toast({
-        title: 'Welcome!',
-        description: 'Successfully logged in with Google.',
-      });
+      const result = await signInWithGoogle();
+      // If result is null, redirect was triggered - don't show success/error messages
+      if (result !== null) {
+        toast({
+          title: 'Welcome!',
+          description: 'Successfully logged in with Google.',
+        });
+      }
+      // If redirect was used, the page will reload and handle success automatically
     } catch (error: any) {
-      toast({
-        title: 'Login failed',
-        description: error.message || 'An error occurred while logging in with Google.',
-        variant: 'destructive',
-      });
+      // Only show error toast for non-redirect scenarios
+      if (!error.message.includes('redirect')) {
+        toast({
+          title: 'Login failed',
+          description: error.message || 'An error occurred while logging in with Google.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setGoogleLoading(false);
     }
