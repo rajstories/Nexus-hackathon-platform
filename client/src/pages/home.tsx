@@ -168,7 +168,7 @@ export default function Home() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="border-2 border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 rounded-full text-lg font-semibold transition-all"
+                  className="border-2 border-white text-white hover:bg-white hover:text-slate-900 px-8 py-4 rounded-full text-lg font-semibold transition-all"
                 >
                   <Play className="mr-2 h-5 w-5" />
                   Watch Demo
@@ -536,7 +536,7 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              How FusionX Works
+              How Nexus Works
             </h2>
             <p className="text-xl text-slate-400 max-w-3xl mx-auto">
               From registration to results - everything you need for a successful hackathon in one platform.
@@ -682,7 +682,7 @@ export default function Home() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-2 border-white text-white hover:bg-white hover:text-slate-900 px-12 py-4 text-lg font-bold rounded-full transition-all"
+                className="border-2 border-slate-300 dark:border-white text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white hover:text-slate-900 px-12 py-4 text-lg font-bold rounded-full transition-all"
               >
                 <Play className="mr-2 h-5 w-5" />
                 Schedule Demo
