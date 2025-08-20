@@ -26,9 +26,11 @@ import {
   Award,
   Settings,
   Share2,
-  MessageCircle
+  MessageCircle,
+  LogOut
 } from "lucide-react";
 import { CertificateDownload } from '@/components/CertificateDownload';
+import { logOut } from '@/lib/firebase';
 
 export function ParticipantDashboard() {
   const { toast } = useToast();
@@ -202,6 +204,22 @@ export function ParticipantDashboard() {
     setEditProfileOpen(false);
   };
 
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      toast({
+        title: 'Signed out',
+        description: 'You have been successfully signed out.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Sign out failed',
+        description: error.message || 'An error occurred while signing out.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleAddSkill = (skill: string) => {
     if (skill.trim() && !editedProfile.skills.includes(skill.trim())) {
       setEditedProfile(prev => ({
@@ -293,17 +311,18 @@ export function ParticipantDashboard() {
                   <AvatarImage src={profile.photoURL || undefined} />
                   <AvatarFallback>{getUserInitials(profile.name, profile.email)}</AvatarFallback>
                 </Avatar>
-                <div className="space-y-1">
+                <div className="space-y-1 flex-1">
                   <h3 className="text-lg font-semibold" data-testid="text-username">{profile.name}</h3>
                   <p className="text-muted-foreground" data-testid="text-email">{profile.email}</p>
                   <p className="text-sm text-muted-foreground">{profile.school}</p>
                 </div>
-                <Dialog open={editProfileOpen} onOpenChange={setEditProfileOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" onClick={handleEditProfile} data-testid="button-edit-profile">
-                      Edit Profile
-                    </Button>
-                  </DialogTrigger>
+                <div className="flex flex-col gap-2">
+                  <Dialog open={editProfileOpen} onOpenChange={setEditProfileOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={handleEditProfile} data-testid="button-edit-profile">
+                        Edit Profile
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="max-w-2xl">
                     <DialogHeader>
                       <DialogTitle>Edit Profile</DialogTitle>
@@ -392,7 +411,18 @@ export function ParticipantDashboard() {
                       </div>
                     </div>
                   </DialogContent>
-                </Dialog>
+                  </Dialog>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleLogout}
+                    data-testid="button-sign-out"
+                    className="text-red-600 hover:text-red-700 hover:border-red-300"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </div>
               </div>
               
               <div>
