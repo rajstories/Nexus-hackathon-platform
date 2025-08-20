@@ -131,7 +131,7 @@ export function RoleRouter() {
           <div className="mb-6">
             <h1 className="text-5xl font-extrabold mb-4 tracking-tight">
               Welcome to 
-              <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent ml-3">
+              <span className="ml-3">
                 Nexus by FusionX
               </span>
             </h1>
