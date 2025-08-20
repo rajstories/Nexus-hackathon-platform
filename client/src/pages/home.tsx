@@ -756,6 +756,112 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Contact Section */}
+      <section id="contact" className="py-24 bg-slate-900">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Get in <span className="text-orange-400">Touch</span>
+            </h2>
+            <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
+              Have questions about Nexus? Want to organize a hackathon? Ready to transform your event experience? Let's connect.
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              <motion.div 
+                className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6"
+                whileHover={{ scale: 1.05, borderColor: '#f97316' }}
+                transition={{ duration: 0.3 }}
+              >
+                <MessageCircle className="h-8 w-8 text-orange-400 mb-4 mx-auto" />
+                <h3 className="text-lg font-semibold text-white mb-2">Direct Contact</h3>
+                <p className="text-slate-400 text-sm mb-4">Email me directly for inquiries</p>
+                <Button 
+                  onClick={() => window.open('mailto:rajshrivastav283815@gmail.com', '_blank')}
+                  className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white"
+                  data-testid="button-email-contact"
+                >
+                  Send Email
+                </Button>
+              </motion.div>
+              
+              <motion.div 
+                className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6"
+                whileHover={{ scale: 1.05, borderColor: '#3b82f6' }}
+                transition={{ duration: 0.3 }}
+              >
+                <Rocket className="h-8 w-8 text-blue-400 mb-4 mx-auto" />
+                <h3 className="text-lg font-semibold text-white mb-2">Quick Message</h3>
+                <p className="text-slate-400 text-sm mb-4">Send a pre-filled message</p>
+                <Button 
+                  onClick={() => window.open('mailto:rajshrivastav283815@gmail.com?subject=Nexus Platform Inquiry&body=Hi! I would like to know more about the Nexus hackathon platform.', '_blank')}
+                  variant="outline"
+                  className="border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-slate-900"
+                  data-testid="button-quick-message"
+                >
+                  Quick Message
+                </Button>
+              </motion.div>
+              
+              <motion.div 
+                className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6"
+                whileHover={{ scale: 1.05, borderColor: '#10b981' }}
+                transition={{ duration: 0.3 }}
+              >
+                <Trophy className="h-8 w-8 text-green-400 mb-4 mx-auto" />
+                <h3 className="text-lg font-semibold text-white mb-2">Partnership</h3>
+                <p className="text-slate-400 text-sm mb-4">Collaborate with us</p>
+                <Button 
+                  onClick={() => window.open('mailto:rajshrivastav283815@gmail.com?subject=Partnership Opportunity - Nexus&body=Hello! I am interested in exploring partnership opportunities with Nexus platform.', '_blank')}
+                  variant="outline"
+                  className="border-green-400 text-green-400 hover:bg-green-400 hover:text-slate-900"
+                  data-testid="button-partnership"
+                >
+                  Partner With Us
+                </Button>
+              </motion.div>
+            </div>
+            
+            <motion.div 
+              className="bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border border-orange-400/20 rounded-xl p-8"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-2xl font-bold text-white mb-4">Ready to Innovate?</h3>
+              <p className="text-slate-300 mb-6">
+                Join thousands of developers, organizers, and judges who trust Nexus for their hackathon events.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <Button 
+                  onClick={() => window.open('mailto:rajshrivastav283815@gmail.com?subject=Host Event on Nexus&body=Hi! I would like to host a hackathon event on the Nexus platform.', '_blank')}
+                  className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white px-6 py-3"
+                  data-testid="button-host-event"
+                >
+                  <Trophy className="mr-2 h-5 w-5" />
+                  Host an Event
+                </Button>
+                <Button 
+                  onClick={() => window.open('mailto:rajshrivastav283815@gmail.com?subject=General Inquiry - Nexus&body=Hello! I have some questions about the Nexus platform.', '_blank')}
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-slate-900 px-6 py-3"
+                  data-testid="button-general-inquiry"
+                >
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                  General Inquiry
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-slate-950 border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-6 py-12">
