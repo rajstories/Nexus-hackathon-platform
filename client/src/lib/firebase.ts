@@ -4,6 +4,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged,
@@ -72,21 +74,22 @@ export const signInWithEmail = async (email: string, password: string) => {
 
 export const signInWithGoogle = async () => {
   try {
+    // Try popup first, fallback to redirect if it fails
     const result = await signInWithPopup(auth, googleProvider);
     console.log('Google sign-in successful:', result.user.email);
     return result;
   } catch (error: any) {
-    console.error('Google sign-in error:', error.code, error.message);
+    console.error('Google popup sign-in failed, trying redirect:', error.code, error.message);
     
-    // Provide user-friendly error messages
+    // If popup fails, use redirect instead
+    if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+      await signInWithRedirect(auth, googleProvider);
+      return null; // Redirect doesn't return immediately
+    }
+    
+    // Provide user-friendly error messages for other errors
     let userMessage = 'Google sign-in failed. ';
     switch (error.code) {
-      case 'auth/popup-closed-by-user':
-        userMessage += 'Sign-in was cancelled.';
-        break;
-      case 'auth/popup-blocked':
-        userMessage += 'Popup was blocked by browser.';
-        break;
       case 'auth/unauthorized-domain':
         userMessage += 'This domain is not authorized for Google sign-in.';
         break;
@@ -100,6 +103,21 @@ export const signInWithGoogle = async () => {
     const customError = new Error(userMessage);
     customError.name = error.code || 'GoogleSignInError';
     throw customError;
+  }
+};
+
+// Handle redirect result when user returns from Google sign-in
+export const handleRedirectResult = async () => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      console.log('Google redirect sign-in successful:', result.user.email);
+      return result;
+    }
+    return null;
+  } catch (error: any) {
+    console.error('Google redirect result error:', error.code, error.message);
+    throw error;
   }
 };
 
