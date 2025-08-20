@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import { Card } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { useAuth } from "../contexts/AuthContext";
 import { useLocation } from "wouter";
-import { SponsorsShowcase } from "@/components/SponsorsShowcase";
-import { LiveDemoButton } from "@/components/demo/LiveDemoButton";
+import { SponsorsShowcase } from "../components/SponsorsShowcase";
+import { LiveDemoButton } from "../components/demo/LiveDemoButton";
 import { 
   Award,
   Brain,
@@ -599,7 +599,7 @@ export default function Home() {
                       </motion.div>
                       
                       <motion.div 
-                        className={`text-5xl mb-6 p-4 rounded-full bg-gradient-to-r ${step.color} w-fit mx-auto mt-4 shadow-lg`}
+                        className={"text-5xl mb-6 p-4 rounded-full bg-gradient-to-r " + step.color + " w-fit mx-auto mt-4 shadow-lg"}
                         whileHover={{ 
                           scale: 1.1, 
                           rotate: [0, -10, 10, 0],
@@ -644,7 +644,7 @@ export default function Home() {
                   </motion.div>
                 )}
               </motion.div>
-            ))
+            ))}
           </div>
         </div>
       </section>
@@ -683,7 +683,7 @@ export default function Home() {
                 className="text-center"
               >
                 <div className="text-4xl mb-4">{stat.icon}</div>
-                <div className={`text-4xl font-bold ${stat.color} mb-2`}>{stat.number}</div>
+                <div className={"text-4xl font-bold " + stat.color + " mb-2"}>{stat.number}</div>
                 <div className="text-slate-400 font-medium">{stat.label}</div>
               </motion.div>
             ))}

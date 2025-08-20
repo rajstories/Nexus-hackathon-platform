@@ -1,7 +1,7 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useLocation } from 'wouter';
 import { useEffect } from 'react';
-import { RoleRouter } from '@/components/dashboard/RoleRouter';
+import { RoleRouter } from '../components/dashboard/RoleRouter';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
