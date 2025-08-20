@@ -6,10 +6,12 @@ import { useLocation } from "wouter";
 import { SponsorsShowcase } from "@/components/SponsorsShowcase";
 import { LiveDemoButton } from "@/components/demo/LiveDemoButton";
 import { 
-  Code, 
-  Server, 
-  Shield, 
-  Layers, 
+  Award,
+  Brain,
+  Trophy,
+  Shield,
+  BarChart3,
+  MessageCircle,
   Rocket, 
   Play, 
   Github, 
@@ -55,222 +57,269 @@ const pulseAnimation = {
   }
 };
 
-const bounceAnimation = {
-  animate: {
-    y: [0, -10, 0],
-    transition: {
-      duration: 2,
-      ease: "easeInOut",
-      repeat: Infinity
-    }
-  }
-};
-
 export default function Home() {
+  const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-dark-900 text-white overflow-x-hidden">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-dark-900/80 backdrop-blur-md border-b border-dark-700/50" data-testid="header">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <nav className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <motion.div 
-                className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center"
-                {...pulseAnimation}
-                data-testid="logo"
-              >
-                <Code className="text-white text-lg" />
-              </motion.div>
-              <span className="text-xl font-bold text-white">HackerSpace</span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
+      {/* Navigation */}
+      <nav className="w-full py-6">
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="text-2xl font-bold text-white">
+              Fusion<span className="text-orange-400">X</span>
+              <div className="text-xs text-slate-400 mt-1">by Advanced Platform</div>
             </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-300 hover:text-white transition-colors" data-testid="link-features">Features</a>
-              <a href="#structure" className="text-gray-300 hover:text-white transition-colors" data-testid="link-structure">Structure</a>
-              <a href="#getting-started" className="text-gray-300 hover:text-white transition-colors" data-testid="link-getting-started">Get Started</a>
-              <Button className="bg-primary hover:bg-blue-600 transition-colors" data-testid="button-github">
-                <Github className="mr-2 h-4 w-4" />
-                View on GitHub
+          </div>
+          <div className="hidden md:flex items-center space-x-8 text-slate-300">
+            <a href="#features" className="hover:text-white transition-colors">Features</a>
+            <a href="#tech" className="hover:text-white transition-colors">Technology</a>
+            <a href="#about" className="hover:text-white transition-colors">About</a>
+            <a href="#demo" className="hover:text-white transition-colors">Demo</a>
+            <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+          </div>
+          <div>
+            {user ? (
+              <Button onClick={() => setLocation('/dashboard')} className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-medium">
+                Dashboard
               </Button>
-            </div>
-          </nav>
+            ) : (
+              <Button onClick={() => setLocation('/auth')} className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-medium">
+                Register
+              </Button>
+            )}
+          </div>
         </div>
-      </header>
+      </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen relative gradient-bg flex items-center justify-center overflow-hidden" data-testid="hero-section">
-        <div className="absolute inset-0 opacity-10">
-          <motion.div 
-            className="absolute top-20 left-20 w-72 h-72 bg-primary rounded-full blur-3xl"
-            {...pulseAnimation}
-          />
-          <motion.div 
-            className="absolute bottom-20 right-20 w-96 h-96 bg-secondary rounded-full blur-3xl"
-            {...bounceAnimation}
-          />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent rounded-full blur-3xl" />
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 w-full">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <motion.div 
+              {...fadeInLeft}
+              className="space-y-8"
+            >
+              <div className="space-y-4">
+                <motion.h2 
+                  {...fadeInUp}
+                  className="text-4xl md:text-5xl font-light text-white leading-tight"
+                >
+                  Learn, Build, Innovate
+                </motion.h2>
+                <motion.h1 
+                  {...fadeInUp}
+                  className="text-6xl md:text-7xl font-bold leading-tight"
+                >
+                  <span className="text-transparent bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500 bg-clip-text">
+                    FusionX
+                  </span>
+                </motion.h1>
+                <motion.p 
+                  {...fadeInUp}
+                  className="text-xl md:text-2xl text-slate-300 font-light"
+                >
+                  Next-Gen Web3 & AI Hackathon Platform
+                </motion.p>
+              </div>
+              
+              <motion.div 
+                {...fadeInUp}
+                className="flex flex-wrap gap-4"
+              >
+                <Button 
+                  onClick={() => setLocation('/auth')}
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full text-lg font-medium"
+                >
+                  Register Now
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-3 rounded-full text-lg"
+                >
+                  View Features
+                </Button>
+              </motion.div>
+            </motion.div>
+            
+            {/* Right 3D Illustration */}
+            <motion.div 
+              {...fadeInRight}
+              className="relative flex items-center justify-center"
+            >
+              <div className="relative w-full max-w-lg">
+                {/* Main Monitor */}
+                <motion.div 
+                  {...pulseAnimation}
+                  className="relative transform rotate-12 hover:rotate-6 transition-transform duration-300"
+                >
+                  <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border-4 border-orange-400/30 p-6 shadow-2xl">
+                    <div className="bg-slate-900 rounded h-48 border border-slate-700 flex items-center justify-center">
+                      <div className="text-6xl font-bold text-orange-400">FX</div>
+                    </div>
+                    <div className="mt-4 h-2 bg-slate-700 rounded"></div>
+                    <div className="mt-2 flex gap-2">
+                      <div className="h-1 bg-orange-400 rounded flex-1"></div>
+                      <div className="h-1 bg-slate-700 rounded flex-1"></div>
+                      <div className="h-1 bg-slate-700 rounded flex-1"></div>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-500 to-yellow-500 h-4 rounded-b-lg mx-4"></div>
+                  <div className="bg-slate-800 h-6 w-16 mx-auto rounded-b-lg"></div>
+                </motion.div>
+                
+                {/* Floating Icons */}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
+                  className="absolute -top-8 -left-8 transform hover:scale-110 transition-transform"
+                >
+                  <div className="bg-gradient-to-br from-blue-500 to-purple-500 w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg">
+                    🏆
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.7, duration: 0.5 }}
+                  className="absolute top-16 -right-12 transform hover:scale-110 transition-transform"
+                >
+                  <div className="bg-gradient-to-br from-green-500 to-emerald-500 w-14 h-14 rounded-xl flex items-center justify-center text-white text-xl shadow-lg">
+                    ⚡
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.9, duration: 0.5 }}
+                  className="absolute -bottom-4 -left-12 transform hover:scale-110 transition-transform"
+                >
+                  <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg shadow-lg">
+                    🧠
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.1, duration: 0.5 }}
+                  className="absolute bottom-20 -right-8 transform hover:scale-110 transition-transform"
+                >
+                  <div className="bg-gradient-to-br from-yellow-500 to-orange-500 w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm shadow-lg">
+                    🔒
+                  </div>
+                </motion.div>
+                
+                {/* Geometric Shapes */}
+                <div className="absolute top-1/2 -left-16 w-8 h-8 bg-orange-400/20 rounded-full animate-pulse"></div>
+                <div className="absolute top-1/4 right-0 w-6 h-6 bg-blue-400/20 rotate-45 animate-pulse"></div>
+              </div>
+            </motion.div>
+          </div>
         </div>
         
-        <div className="max-w-6xl mx-auto px-6 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-          >
-            <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-white via-primary to-secondary bg-clip-text text-transparent" data-testid="text-hero-title">
-              HackerSpace
-            </h1>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-          >
-            <p className="text-xl md:text-2xl text-gray-300 mb-4 font-light" data-testid="text-hero-subtitle">
-              Modern Hackathon Platform
-            </p>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
-          >
-            <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed" data-testid="text-hero-description">
-              Host and participate in hackathons with real-time collaboration, live leaderboards, and seamless judging. Built for modern teams.
-            </p>
-          </motion.div>
-          
-          <motion.div 
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.8 }}
-          >
-            <LiveDemoButton />
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-blue-600 px-8 py-4 text-lg font-medium transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/25"
-              data-testid="button-quick-start"
-            >
-              <Rocket className="mr-2 h-5 w-5" />
-              Quick Start
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="border-dark-700 hover:border-primary px-8 py-4 text-lg font-medium transition-all hover:scale-105 glass-card"
-              data-testid="button-view-demo"
-            >
-              <Play className="mr-2 h-5 w-5" />
-              View Demo
-            </Button>
-          </motion.div>
-          
-          <motion.div 
-            className="mt-16"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0, duration: 0.8 }}
-          >
-            <Card className="code-block p-6 text-left max-w-2xl mx-auto" data-testid="card-terminal">
-              <div className="flex items-center mb-4">
-                <div className="flex space-x-2 mr-4">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                </div>
-                <span className="text-gray-400 font-mono text-sm">Terminal</span>
-              </div>
-              <div className="font-mono text-sm">
-                <div className="text-accent">$ npm run dev</div>
-                <div className="text-gray-400 mt-2">🚀 React running on http://localhost:5000</div>
-                <div className="text-gray-400">⚡ API server running on http://localhost:8000</div>
-                <div className="text-primary mt-2">✅ Both apps healthy and ready!</div>
-              </div>
-            </Card>
-          </motion.div>
-        </div>
+        {/* Bottom Preview/Indicator */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.5 }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        >
+          <div className="w-3 h-3 bg-orange-400 rounded-full animate-bounce"></div>
+        </motion.div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-dark-800" data-testid="features-section">
+      <section id="features" className="py-24 bg-slate-800/50">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div 
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
+            className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-features-title">
-              Why <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">HackerSpace</span>?
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Why <span className="text-orange-400">FusionX</span>?
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Everything you need to host successful hackathons with real-time features and modern tools.
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              Everything you need to host successful hackathons with cutting-edge innovation.
             </p>
           </motion.div>
-          
+
           <motion.div 
+            {...staggerContainer}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
           >
             {[
               {
-                icon: Layers,
-                title: "Monorepo Structure",
-                description: "Organized workspace with npm workspaces, shared packages, and unified development workflow. Scale your codebase efficiently.",
-                gradient: "from-primary to-blue-600",
-                testId: "card-monorepo"
+                icon: <Award className="h-8 w-8 text-yellow-500" />,
+                title: "🏅 Web3 & NFT Badges",
+                description: "Blockchain-verified proof of participation with dynamic NFT generation and IPFS storage.",
+                badge: "INNOVATION"
               },
               {
-                icon: Code,
-                title: "React + Vite",
-                description: "Latest React with Vite, TypeScript, Tailwind CSS, shadcn/ui components, and Framer Motion animations out of the box.",
-                gradient: "from-secondary to-purple-600",
-                testId: "card-react"
+                icon: <Brain className="h-8 w-8 text-purple-500" />,
+                title: "🧠 AI Sentiment Analysis",
+                description: "Advanced AI-powered community monitoring with toxicity detection and emotion recognition.",
+                badge: "AI-POWERED"
               },
               {
-                icon: Server,
-                title: "Express API",
-                description: "TypeScript-powered Express server with hot reload, production-ready configuration.",
-                gradient: "from-accent to-green-600",
-                testId: "card-express"
+                icon: <Trophy className="h-8 w-8 text-orange-500" />,
+                title: "🏆 Gamification System",
+                description: "15+ achievements, level progression, and community leaderboards to boost engagement.",
+                badge: "ENGAGEMENT"
               },
               {
-                icon: Shield,
-                title: "Type Safety",
-                description: "Shared TypeScript types and Zod schemas ensure consistency between frontend and backend with runtime validation.",
-                gradient: "from-yellow-500 to-orange-500",
-                testId: "card-type-safety"
+                icon: <BarChart3 className="h-8 w-8 text-green-500" />,
+                title: "⚡ Performance Monitoring",
+                description: "Real-time system health with 1000+ user capacity and Azure auto-scaling.",
+                badge: "SCALABLE"
               },
               {
-                icon: WandSparkles,
-                title: "Developer Experience",
-                description: "ESLint, Prettier, path aliases, concurrent development, and optimized build pipeline for seamless development.",
-                gradient: "from-pink-500 to-rose-500",
-                testId: "card-developer-experience"
+                icon: <Shield className="h-8 w-8 text-blue-500" />,
+                title: "🔒 Enterprise Security",
+                description: "Rate limiting, input sanitization, and comprehensive protection for production use.",
+                badge: "SECURE"
               },
               {
-                icon: Zap,
-                title: "Production Ready",
-                description: "Optimized builds, environment configuration, and deployment scripts. Go from development to production in minutes.",
-                gradient: "from-indigo-500 to-purple-500",
-                testId: "card-production-ready"
+                icon: <MessageCircle className="h-8 w-8 text-indigo-500" />,
+                title: "💬 Real-time Communication",
+                description: "WebSocket-powered live chat, announcements, and collaborative features.",
+                badge: "LIVE"
               }
             ].map((feature, index) => (
-              <motion.div key={index} variants={fadeInUp}>
-                <Card className="glass-card p-8 hover-lift h-full" data-testid={feature.testId}>
-                  <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center mb-6`}>
-                    <feature.icon className="text-white text-2xl" />
+              <motion.div
+                key={index}
+                {...fadeInUp}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="bg-slate-900/50 border-slate-700 hover:border-orange-400/50 transition-all hover:shadow-xl hover:scale-105 h-full">
+                  <div className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      {feature.icon}
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
+                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-orange-500/20 text-orange-400 border border-orange-500/30 mt-1">
+                          {feature.badge}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-slate-400 leading-relaxed">{feature.description}</p>
                   </div>
-                  <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
-                  <p className="text-gray-400 leading-relaxed">
-                    {feature.description}
-                  </p>
                 </Card>
               </motion.div>
             ))}
@@ -278,250 +327,100 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Project Structure Section */}
-      <section id="structure" className="py-24 bg-dark-900" data-testid="structure-section">
+      {/* Technology Stack */}
+      <section id="tech" className="py-24 bg-slate-900">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div 
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
+            className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-structure-title">Project Structure</h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Clean, organized, and scalable architecture designed for modern development teams.
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Advanced Technology Stack
+            </h2>
+            <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+              Built with cutting-edge technologies for enterprise-grade performance.
             </p>
           </motion.div>
-          
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            <motion.div variants={fadeInLeft} initial="initial" whileInView="animate" viewport={{ once: true }}>
-              <Card className="code-block p-8" data-testid="card-folder-structure">
-                <div className="flex items-center mb-6">
-                  <div className="flex space-x-2 mr-4">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            {[
+              { name: "Web3 & NFTs", desc: "Blockchain Integration", icon: "🔗", color: "from-yellow-400 to-orange-500" },
+              { name: "AI Analysis", desc: "Smart Monitoring", icon: "🧠", color: "from-purple-400 to-pink-500" },
+              { name: "Real-time", desc: "WebSocket Power", icon: "⚡", color: "from-blue-400 to-cyan-500" },
+              { name: "Enterprise", desc: "Production Ready", icon: "🏢", color: "from-green-400 to-emerald-500" },
+            ].map((tech, index) => (
+              <Card key={index} className="bg-slate-800/50 border-slate-700 hover:border-orange-400/50 transition-all text-center">
+                <div className="pt-6 pb-6 px-4">
+                  <div className={`text-4xl mb-4 p-4 rounded-full bg-gradient-to-r ${tech.color} w-fit mx-auto`}>
+                    {tech.icon}
                   </div>
-                  <span className="text-gray-400 font-mono text-sm">fusion-x/</span>
-                </div>
-                <div className="font-mono text-sm space-y-1">
-                  <div className="flex items-center">
-                    <span className="text-primary">client/</span>
-                    <span className="text-gray-500 ml-4"># React frontend</span>
+                  <div className="text-lg font-semibold text-white mb-2">
+                    {tech.name}
                   </div>
-                  <div className="flex items-center">
-                    <span className="text-primary">server/</span>
-                    <span className="text-gray-500 ml-4"># Express API</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-primary">shared/</span>
-                    <span className="text-gray-500 ml-4"># Shared types & schemas</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-gray-300">package.json</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-gray-300">tsconfig.json</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="text-gray-300">README.md</span>
+                  <div className="text-sm text-slate-400">
+                    {tech.desc}
                   </div>
                 </div>
               </Card>
-            </motion.div>
-            
-            <motion.div 
-              variants={fadeInRight} 
-              initial="initial" 
-              whileInView="animate" 
-              viewport={{ once: true }}
-              className="space-y-6"
-            >
-              {[
-                {
-                  icon: Code,
-                  title: "Web Application",
-                  description: "React with Vite, TypeScript, Tailwind CSS, shadcn/ui components, and Framer Motion animations.",
-                  gradient: "from-primary to-blue-600",
-                  testId: "card-web-app"
-                },
-                {
-                  icon: Server,
-                  title: "API Server",
-                  description: "Express server with TypeScript and production builds.",
-                  gradient: "from-accent to-green-600",
-                  testId: "card-api-server"
-                },
-                {
-                  icon: Shield,
-                  title: "Shared Types",
-                  description: "Common TypeScript interfaces, DTOs, and Zod schemas used across frontend and backend.",
-                  gradient: "from-yellow-500 to-orange-500",
-                  testId: "card-shared-types"
-                }
-              ].map((item, index) => (
-                <Card key={index} className="glass-card p-6" data-testid={item.testId}>
-                  <div className="flex items-center mb-3">
-                    <div className={`w-8 h-8 bg-gradient-to-br ${item.gradient} rounded-lg flex items-center justify-center mr-3`}>
-                      <item.icon className="text-white text-sm" />
-                    </div>
-                    <h3 className="text-xl font-bold">{item.title}</h3>
-                  </div>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    {item.description}
-                  </p>
-                </Card>
-              ))}
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Getting Started Section */}
-      <section id="getting-started" className="py-24 bg-dark-800" data-testid="getting-started-section">
-        <div className="max-w-6xl mx-auto px-6">
-          <motion.div 
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-getting-started-title">Get Started in Minutes</h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Three simple commands to have your development environment up and running.
-            </p>
-          </motion.div>
-          
-          <div className="space-y-8">
-            {[
-              {
-                step: "1",
-                title: "Clone & Install",
-                commands: [
-                  "$ git clone https://github.com/your-org/fusion-x.git",
-                  "$ cd fusion-x",
-                  "$ npm install"
-                ],
-                gradient: "from-primary to-blue-600",
-                testId: "step-install"
-              },
-              {
-                step: "2",
-                title: "Start Development",
-                commands: [
-                  "$ npm run dev",
-                  "🚀 React running on http://localhost:5000",
-                  "⚡ API server running on http://localhost:8000"
-                ],
-                gradient: "from-secondary to-purple-600",
-                testId: "step-development"
-              },
-              {
-                step: "3",
-                title: "Build & Deploy",
-                commands: [
-                  "$ npm run build",
-                  "$ npm run start",
-                  "✅ Production build ready!"
-                ],
-                gradient: "from-accent to-green-600",
-                testId: "step-deploy"
-              }
-            ].map((step, index) => (
-              <motion.div 
-                key={index}
-                className="flex flex-col md:flex-row items-start gap-8"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.8 }}
-                viewport={{ once: true }}
-                data-testid={step.testId}
-              >
-                <div className="flex-shrink-0">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${step.gradient} rounded-xl flex items-center justify-center`}>
-                    <span className="text-white font-bold text-lg">{step.step}</span>
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-2xl font-bold mb-4">{step.title}</h3>
-                  <Card className="code-block p-4 font-mono text-sm">
-                    {step.commands.map((command, cmdIndex) => (
-                      <div 
-                        key={cmdIndex} 
-                        className={cmdIndex === 0 ? "text-accent" : cmdIndex === step.commands.length - 1 && step.commands.length > 2 ? "text-primary mt-2" : "text-gray-400 mt-2"}
-                      >
-                        {command}
-                      </div>
-                    ))}
-                  </Card>
-                </div>
-              </motion.div>
             ))}
           </div>
-          
-          <motion.div 
-            className="mt-16 text-center"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <Card className="glass-card p-12 max-w-4xl mx-auto" data-testid="card-cta">
-              <h3 className="text-3xl font-bold mb-4">Ready to Build Something Amazing?</h3>
-              <p className="text-gray-400 mb-8 text-lg">
-                Join thousands of developers who have chosen HackerSpace for their next project.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  size="lg"
-                  className="bg-primary hover:bg-blue-600 px-8 py-4 text-lg font-medium transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/25"
-                  data-testid="button-get-started-github"
-                >
-                  <Github className="mr-2 h-5 w-5" />
-                  Get Started on GitHub
-                </Button>
-                <Button 
-                  variant="outline"
-                  size="lg"
-                  className="border-dark-700 hover:border-secondary px-8 py-4 text-lg font-medium transition-all hover:scale-105"
-                  data-testid="button-read-docs"
-                >
-                  <Book className="mr-2 h-5 w-5" />
-                  Read Documentation
-                </Button>
-              </div>
-            </Card>
-          </motion.div>
         </div>
       </section>
 
-      {/* Sponsors Section */}
-      <section className="py-24 bg-dark-900" data-testid="sponsors-section">
-        <div className="max-w-7xl mx-auto px-6">
-          <SponsorsShowcase eventId="1" />
+      {/* CTA Section */}
+      <section id="demo" className="py-24 bg-gradient-to-r from-orange-600/20 via-yellow-600/20 to-orange-600/20">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Ready to Build the Future?
+          </h2>
+          <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+            Join thousands of innovators using FusionX to create amazing hackathon experiences with Web3, AI, and cutting-edge technology.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              onClick={() => setLocation('/auth')}
+              size="lg" 
+              className="bg-orange-500 hover:bg-orange-600 text-white px-12 py-4 text-lg font-semibold rounded-full"
+            >
+              Start Building Now
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-white text-white hover:bg-white hover:text-slate-900 px-12 py-4 text-lg font-semibold rounded-full"
+            >
+              Learn More
+            </Button>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-dark-800 border-t border-dark-700 py-12" data-testid="footer">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-                <Code className="text-white text-lg" />
-              </div>
-              <span className="text-xl font-bold text-white">HackerSpace</span>
+      <footer className="bg-slate-950 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="text-center">
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-white">
+                Fusion<span className="text-orange-400">X</span>
+                <div className="text-xs text-slate-400 mt-1">by Advanced Platform</div>
+              </h3>
             </div>
-            <div className="flex items-center space-x-8">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors" data-testid="link-github">
-                <Github className="text-xl" />
-              </a>
+            <p className="text-slate-400 mb-8">Next-Gen Web3 & AI Hackathon Platform with Enterprise Features</p>
+            <div className="flex flex-wrap justify-center gap-8 mb-8 text-sm">
+              <a href="#features" className="text-slate-400 hover:text-orange-400 transition-colors">Features</a>
+              <a href="#tech" className="text-slate-400 hover:text-orange-400 transition-colors">Technology</a>
+              <a href="#about" className="text-slate-400 hover:text-orange-400 transition-colors">About</a>
+              <a href="#demo" className="text-slate-400 hover:text-orange-400 transition-colors">Demo</a>
+              <a href="#contact" className="text-slate-400 hover:text-orange-400 transition-colors">Contact</a>
             </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-dark-700 text-center text-gray-400">
-            <p>&copy; 2024 HackerSpace. Built for the modern web.</p>
+            <div className="pt-8 border-t border-slate-800">
+              <p className="text-slate-500 text-sm">
+                © 2024 FusionX. Empowering innovation through advanced hackathon technology.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
