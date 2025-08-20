@@ -160,6 +160,7 @@ export default function Home() {
                   Host an Event
                 </Button>
                 <Button 
+                  onClick={() => setLocation('/hackathons')}
                   variant="outline" 
                   className="border-2 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-slate-900 px-8 py-4 rounded-full text-lg font-semibold transition-all"
                 >
