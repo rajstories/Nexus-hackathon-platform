@@ -42,7 +42,6 @@ function AppContent() {
 
   return (
     <>
-      <DevRoleSwitcher />
       <Router />
     </>
   );
