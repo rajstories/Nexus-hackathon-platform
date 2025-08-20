@@ -215,11 +215,11 @@ export const securityHeaders = helmet({
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://apis.google.com", "https://*.googleapis.com", "https://www.gstatic.com", "https://replit.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https:", "blob:"],
         connectSrc: ["'self'", "https://api.github.com", "https://*.firebaseapp.com", "https://*.googleapis.com", "wss:", "ws:"],
-        frameSrc: ["'none'"],
+        frameSrc: ["'self'", "https://accounts.google.com", "https://*.firebaseapp.com"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: []
       }
