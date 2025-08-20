@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
+import { SponsorsShowcase } from "@/components/SponsorsShowcase";
 import { 
   Code, 
   Server, 
@@ -491,6 +492,13 @@ export default function Home() {
               </div>
             </Card>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Sponsors Section */}
+      <section className="py-24 bg-dark-900" data-testid="sponsors-section">
+        <div className="max-w-7xl mx-auto px-6">
+          <SponsorsShowcase eventId="1" />
         </div>
       </section>
 

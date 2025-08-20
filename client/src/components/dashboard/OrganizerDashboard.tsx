@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { SimilarityPanel } from '@/components/SimilarityPanel';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
+import { SponsorManagement } from '@/components/SponsorManagement';
 
 export function OrganizerDashboard() {
   const { toast } = useToast();
@@ -114,10 +115,11 @@ export function OrganizerDashboard() {
       </div>
 
       <Tabs defaultValue="event" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="event" data-testid="tab-event">Event</TabsTrigger>
           <TabsTrigger value="analytics" data-testid="tab-analytics">Analytics</TabsTrigger>
           <TabsTrigger value="tracks" data-testid="tab-tracks">Tracks</TabsTrigger>
+          <TabsTrigger value="sponsors" data-testid="tab-sponsors">Sponsors</TabsTrigger>
           <TabsTrigger value="announcements" data-testid="tab-announcements">Announcements</TabsTrigger>
           <TabsTrigger value="judges" data-testid="tab-judges">Judges</TabsTrigger>
           <TabsTrigger value="submissions" data-testid="tab-submissions">Submissions</TabsTrigger>
@@ -234,6 +236,10 @@ export function OrganizerDashboard() {
 
         <TabsContent value="analytics" className="space-y-6">
           <AnalyticsDashboard eventId={currentEvent.id.toString()} />
+        </TabsContent>
+
+        <TabsContent value="sponsors" className="space-y-6">
+          <SponsorManagement eventId={currentEvent.id.toString()} />
         </TabsContent>
 
         <TabsContent value="tracks" className="space-y-6">
