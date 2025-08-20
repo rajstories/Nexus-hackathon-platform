@@ -30,6 +30,12 @@ export function ParticipantDashboard() {
   const { user, loading } = useAuth();
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [editedProfile, setEditedProfile] = useState({
+    name: "",
+    school: "",
+    skills: [] as string[]
+  });
 
   // Show loading while auth is being determined
   if (loading) {
@@ -90,6 +96,41 @@ export function ParticipantDashboard() {
     setSubmitDialogOpen(false);
   };
 
+  const handleEditProfile = () => {
+    // Initialize the edit form with current values
+    setEditedProfile({
+      name: profile.name,
+      school: profile.school,
+      skills: [...profile.skills]
+    });
+    setEditProfileOpen(true);
+  };
+
+  const handleSaveProfile = () => {
+    // In a real app, this would save to the database
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been updated successfully!"
+    });
+    setEditProfileOpen(false);
+  };
+
+  const handleAddSkill = (skill: string) => {
+    if (skill.trim() && !editedProfile.skills.includes(skill.trim())) {
+      setEditedProfile(prev => ({
+        ...prev,
+        skills: [...prev.skills, skill.trim()]
+      }));
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      skills: prev.skills.filter(skill => skill !== skillToRemove)
+    }));
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="flex items-center justify-between mb-8">
@@ -131,7 +172,101 @@ export function ParticipantDashboard() {
                   <p className="text-muted-foreground" data-testid="text-email">{profile.email}</p>
                   <p className="text-sm text-muted-foreground">{profile.school}</p>
                 </div>
-                <Button variant="outline" size="sm">Edit Profile</Button>
+                <Dialog open={editProfileOpen} onOpenChange={setEditProfileOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={handleEditProfile} data-testid="button-edit-profile">
+                      Edit Profile
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Edit Profile</DialogTitle>
+                      <DialogDescription>Update your personal information and skills</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="edit-name">Display Name</Label>
+                        <Input 
+                          id="edit-name" 
+                          value={editedProfile.name}
+                          onChange={(e) => setEditedProfile(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Your display name"
+                          data-testid="input-edit-name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="edit-school">School/Organization</Label>
+                        <Input 
+                          id="edit-school" 
+                          value={editedProfile.school}
+                          onChange={(e) => setEditedProfile(prev => ({ ...prev, school: e.target.value }))}
+                          placeholder="Your school or organization"
+                          data-testid="input-edit-school"
+                        />
+                      </div>
+                      <div>
+                        <Label>Skills</Label>
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            {editedProfile.skills.map((skill) => (
+                              <Badge 
+                                key={skill} 
+                                variant="secondary" 
+                                className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={() => handleRemoveSkill(skill)}
+                                data-testid={`badge-skill-${skill.toLowerCase()}`}
+                              >
+                                {skill} ×
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex gap-2">
+                            <Input 
+                              placeholder="Add a skill"
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleAddSkill((e.target as HTMLInputElement).value);
+                                  (e.target as HTMLInputElement).value = '';
+                                }
+                              }}
+                              data-testid="input-add-skill"
+                            />
+                            <Button 
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                const input = document.querySelector('[data-testid="input-add-skill"]') as HTMLInputElement;
+                                if (input?.value) {
+                                  handleAddSkill(input.value);
+                                  input.value = '';
+                                }
+                              }}
+                              data-testid="button-add-skill"
+                            >
+                              Add
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Click on skills to remove them, or press Enter to add new ones</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3 pt-4">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setEditProfileOpen(false)}
+                          data-testid="button-cancel-edit"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleSaveProfile}
+                          data-testid="button-save-profile"
+                        >
+                          Save Changes
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
               
               <div>
