@@ -1,9 +1,53 @@
+import React from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Users, Trophy, Calendar, Code, Zap, Globe, Rocket, Brain, Award, Shield, BarChart3, MessageCircle } from 'lucide-react';
+
+// Simple components since @/ imports aren't working
+const Card = ({ children, className = '', ...props }) => (
+  <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`} {...props}>
+    {children}
+  </div>
+);
+const CardHeader = ({ children, className = '', ...props }) => (
+  <div className={`flex flex-col space-y-1.5 p-6 ${className}`} {...props}>{children}</div>
+);
+const CardTitle = ({ children, className = '', ...props }) => (
+  <h3 className={`text-2xl font-semibold leading-none tracking-tight ${className}`} {...props}>{children}</h3>
+);
+const CardDescription = ({ children, className = '', ...props }) => (
+  <p className={`text-sm text-muted-foreground ${className}`} {...props}>{children}</p>
+);
+const CardContent = ({ children, className = '', ...props }) => (
+  <div className={`p-6 pt-0 ${className}`} {...props}>{children}</div>
+);
+const Button = ({ children, className = '', variant = 'default', size = 'default', ...props }) => {
+  const baseClasses = 'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
+  const variants = {
+    default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+    outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground'
+  };
+  const sizes = {
+    default: 'h-10 px-4 py-2',
+    lg: 'h-11 rounded-md px-8'
+  };
+  return (
+    <button className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`} {...props}>
+      {children}
+    </button>
+  );
+};
+const Badge = ({ children, className = '', variant = 'default', ...props }) => {
+  const variants = {
+    default: 'bg-primary text-primary-foreground hover:bg-primary/80',
+    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+  };
+  return (
+    <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${variants[variant]} ${className}`} {...props}>
+      {children}
+    </div>
+  );
+};
 
 export default function Home() {
   const features = [
