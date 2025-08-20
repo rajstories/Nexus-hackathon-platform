@@ -168,7 +168,7 @@ export default function Home() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="border-2 border-white text-white hover:bg-white hover:text-slate-900 px-8 py-4 rounded-full text-lg font-semibold transition-all"
+                  className="border-2 border-slate-300 dark:border-white text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white hover:text-slate-900 px-8 py-4 rounded-full text-lg font-semibold transition-all"
                 >
                   <Play className="mr-2 h-5 w-5" />
                   Watch Demo
