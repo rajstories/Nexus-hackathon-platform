@@ -26,16 +26,20 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId || !firebaseConfig.appId
   console.error('Missing required Firebase configuration');
 }
 
-// Debug logging for Firebase config (only in development)
-if (import.meta.env.DEV) {
-  console.log('Firebase Config Debug:', {
-    apiKey: firebaseConfig.apiKey ? 'Set' : 'Missing',
-    authDomain: firebaseConfig.authDomain,
-    projectId: firebaseConfig.projectId,
-    storageBucket: firebaseConfig.storageBucket,
-    messagingSenderId: firebaseConfig.messagingSenderId ? 'Set' : 'Missing',
-    appId: firebaseConfig.appId ? 'Set' : 'Missing',
-  });
+// Debug logging for Firebase config
+console.log('Firebase Config Debug:', {
+  apiKey: firebaseConfig.apiKey ? 'Set' : 'Missing',
+  authDomain: firebaseConfig.authDomain,
+  projectId: firebaseConfig.projectId,
+  storageBucket: firebaseConfig.storageBucket,
+  messagingSenderId: firebaseConfig.messagingSenderId ? 'Set' : 'Missing',
+  appId: firebaseConfig.appId ? 'Set' : 'Missing',
+  currentURL: window.location.href,
+});
+
+// Validate that projectId matches the authorized domains
+if (firebaseConfig.projectId !== 'hackathon-platform-2be53') {
+  console.warn('⚠️ Project ID mismatch! Expected: hackathon-platform-2be53, Got:', firebaseConfig.projectId);
 }
 
 const app = initializeApp(firebaseConfig);
