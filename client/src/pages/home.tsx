@@ -81,7 +81,7 @@ export default function Home() {
               >
                 <Code className="text-white text-lg" />
               </motion.div>
-              <span className="text-xl font-bold text-white">Fusion X</span>
+              <span className="text-xl font-bold text-white">HackerSpace</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-300 hover:text-white transition-colors" data-testid="link-features">Features</a>
@@ -117,7 +117,7 @@ export default function Home() {
             transition={{ delay: 0.2, duration: 0.8 }}
           >
             <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-white via-primary to-secondary bg-clip-text text-transparent" data-testid="text-hero-title">
-              Fusion X
+              HackerSpace
             </h1>
           </motion.div>
           
@@ -127,7 +127,7 @@ export default function Home() {
             transition={{ delay: 0.4, duration: 0.8 }}
           >
             <p className="text-xl md:text-2xl text-gray-300 mb-4 font-light" data-testid="text-hero-subtitle">
-              Modern JavaScript Monorepo Architecture
+              Modern Hackathon Platform
             </p>
           </motion.div>
           
@@ -137,7 +137,7 @@ export default function Home() {
             transition={{ delay: 0.6, duration: 0.8 }}
           >
             <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed" data-testid="text-hero-description">
-              A production-ready monorepo scaffolding with React frontend, Express API, shared TypeScript types, and seamless development workflow. Built for modern teams who value developer experience.
+              Host and participate in hackathons with real-time collaboration, live leaderboards, and seamless judging. Built for modern teams.
             </p>
           </motion.div>
           
@@ -204,10 +204,10 @@ export default function Home() {
             viewport={{ once: true }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-features-title">
-              Why <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Fusion X</span>?
+              Why <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">HackerSpace</span>?
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Everything you need to build scalable applications with modern tools and best practices baked in.
+              Everything you need to host successful hackathons with real-time features and modern tools.
             </p>
           </motion.div>
           
@@ -471,7 +471,7 @@ export default function Home() {
             <Card className="glass-card p-12 max-w-4xl mx-auto" data-testid="card-cta">
               <h3 className="text-3xl font-bold mb-4">Ready to Build Something Amazing?</h3>
               <p className="text-gray-400 mb-8 text-lg">
-                Join thousands of developers who have chosen Fusion X for their next project.
+                Join thousands of developers who have chosen HackerSpace for their next project.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
@@ -512,7 +512,7 @@ export default function Home() {
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
                 <Code className="text-white text-lg" />
               </div>
-              <span className="text-xl font-bold text-white">Fusion X</span>
+              <span className="text-xl font-bold text-white">HackerSpace</span>
             </div>
             <div className="flex items-center space-x-8">
               <a href="#" className="text-gray-400 hover:text-white transition-colors" data-testid="link-github">
@@ -521,7 +521,7 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-dark-700 text-center text-gray-400">
-            <p>&copy; 2024 Fusion X. Built for the modern web.</p>
+            <p>&copy; 2024 HackerSpace. Built for the modern web.</p>
           </div>
         </div>
       </footer>

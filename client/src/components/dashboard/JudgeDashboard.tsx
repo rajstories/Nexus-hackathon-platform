@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useJudgeNavigation } from "@/hooks/useKeyboardShortcuts";
+import { EmptyState } from "@/components/EmptyState";
 import { 
   Scale, 
   Eye, 
@@ -19,7 +21,9 @@ import {
   FileText,
   ExternalLink,
   Github,
-  CheckCircle
+  CheckCircle,
+  Keyboard,
+  FileQuestion
 } from "lucide-react";
 
 interface Criteria {
@@ -49,6 +53,7 @@ export function JudgeDashboard() {
   const { toast } = useToast();
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [currentSubmissionIndex, setCurrentSubmissionIndex] = useState(0);
   const [scores, setScores] = useState<Record<string, number>>({});
   const [feedback, setFeedback] = useState('');
 
@@ -102,12 +107,30 @@ export function JudgeDashboard() {
     }
   ];
 
-  const handleOpenFeedback = (submission: Submission) => {
+  const handleOpenFeedback = (submission: Submission, index?: number) => {
     setSelectedSubmission(submission);
+    if (index !== undefined) {
+      setCurrentSubmissionIndex(index);
+    }
     setScores(submission.scores || {});
     setFeedback(submission.feedback || '');
     setFeedbackDialogOpen(true);
   };
+
+  // Handle keyboard navigation between submissions
+  const handleNavigate = (newIndex: number) => {
+    if (newIndex >= 0 && newIndex < assignedSubmissions.length) {
+      setCurrentSubmissionIndex(newIndex);
+      handleOpenFeedback(assignedSubmissions[newIndex], newIndex);
+    }
+  };
+
+  // Use keyboard shortcuts for navigation
+  useJudgeNavigation(
+    currentSubmissionIndex,
+    assignedSubmissions.length,
+    handleNavigate
+  );
 
   const handleScoreChange = (criteriaId: string, value: number[]) => {
     setScores(prev => ({ ...prev, [criteriaId]: value[0] }));
@@ -206,8 +229,23 @@ export function JudgeDashboard() {
         </TabsList>
 
         <TabsContent value="submissions" className="space-y-6">
-          <div className="space-y-4">
-            {assignedSubmissions.map((submission) => (
+          {assignedSubmissions.length === 0 ? (
+            <EmptyState
+              icon={FileQuestion}
+              title="No submissions assigned"
+              description="You don't have any submissions to review yet. Check back later or contact the organizers."
+              className="py-12"
+            />
+          ) : (
+            <>
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Keyboard className="w-4 h-4" />
+                  <span>Press <kbd className="px-2 py-0.5 text-xs border rounded">J</kbd> / <kbd className="px-2 py-0.5 text-xs border rounded">K</kbd> to navigate between submissions</span>
+                </div>
+              </div>
+              <div className="space-y-4">
+                {assignedSubmissions.map((submission, index) => (
               <Card key={submission.id}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -226,7 +264,7 @@ export function JudgeDashboard() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleOpenFeedback(submission)}
+                        onClick={() => handleOpenFeedback(submission, index)}
                         data-testid={`button-evaluate-${submission.id}`}
                       >
                         <Eye className="w-4 h-4 mr-2" />
@@ -285,7 +323,9 @@ export function JudgeDashboard() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </>
+      )}
+    </TabsContent>
 
         <TabsContent value="criteria" className="space-y-6">
           <Card>
