@@ -22,6 +22,7 @@ import web3Router from "./routes/web3";
 import achievementsRouter from "./routes/achievements";
 import sentimentRouter from "./routes/sentiment";
 import performanceRouter from "./routes/performance";
+import participantRouter from "./routes/participants";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { 
   authRateLimit, 
@@ -45,6 +46,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Authentication routes with stricter rate limiting
   app.use('/api/auth', authRateLimit, authRouter);
+  
+  // Participant routes (require auth for registration)
+  app.use('/api/participants', verifyFirebaseToken, participantRouter);
   
   // Event routes (public read, auth for write)
   app.use('/api/events', optionalAuth, eventRouter);

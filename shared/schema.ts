@@ -99,11 +99,47 @@ export const scores = pgTable("scores", {
   uniqueJudgeSubmissionCriteriaRound: unique().on(table.submissionId, table.judgeId, table.criteriaId, table.round),
 }));
 
+// Participant profiles for detailed information
+export const participantProfiles = pgTable("participant_profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id).unique(),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }),
+  mobile: varchar("mobile", { length: 20 }).notNull(),
+  countryCode: varchar("country_code", { length: 5 }).notNull().default("+91"),
+  gender: varchar("gender", { length: 20 }).notNull(),
+  instituteName: varchar("institute_name", { length: 255 }).notNull(),
+  participantType: varchar("participant_type", { length: 50 }).notNull(), // College Students, Professional, etc
+  domain: varchar("domain", { length: 100 }).notNull(),
+  course: varchar("course", { length: 255 }),
+  courseSpecialization: varchar("course_specialization", { length: 255 }),
+  graduatingYear: integer("graduating_year"),
+  courseDuration: varchar("course_duration", { length: 50 }),
+  location: varchar("location", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Hackathon registrations table
+export const hackathonRegistrations = pgTable("hackathon_registrations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id),
+  hackathonId: varchar("hackathon_id", { length: 50 }).notNull(), // Links to hackathon data
+  hackathonTitle: varchar("hackathon_title", { length: 255 }).notNull(),
+  registrationData: text("registration_data"), // JSON data for hackathon-specific fields
+  status: varchar("status", { length: 20 }).notNull().default("registered"),
+  registeredAt: timestamp("registered_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserHackathon: unique().on(table.userId, table.hackathonId),
+}));
+
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   teamsCreated: many(teams),
   teamMemberships: many(teamMembers),
   eventsOrganized: many(events),
+  participantProfile: one(participantProfiles),
+  hackathonRegistrations: many(hackathonRegistrations),
 }));
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -190,6 +226,20 @@ export const scoresRelations = relations(scores, ({ one }) => ({
   }),
 }));
 
+export const participantProfilesRelations = relations(participantProfiles, ({ one }) => ({
+  user: one(users, {
+    fields: [participantProfiles.userId],
+    references: [users.id],
+  }),
+}));
+
+export const hackathonRegistrationsRelations = relations(hackathonRegistrations, ({ one }) => ({
+  user: one(users, {
+    fields: [hackathonRegistrations.userId],
+    references: [users.id],
+  }),
+}));
+
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertEventSchema = createInsertSchema(events);
@@ -199,6 +249,8 @@ export const insertSubmissionSchema = createInsertSchema(submissions);
 export const insertJudgeAssignmentSchema = createInsertSchema(judgeAssignments);
 export const insertEvaluationCriteriaSchema = createInsertSchema(evaluationCriteria);
 export const insertScoreSchema = createInsertSchema(scores);
+export const insertParticipantProfileSchema = createInsertSchema(participantProfiles);
+export const insertHackathonRegistrationSchema = createInsertSchema(hackathonRegistrations);
 
 // Type exports
 export type User = typeof users.$inferSelect;
@@ -217,3 +269,7 @@ export type EvaluationCriteria = typeof evaluationCriteria.$inferSelect;
 export type InsertEvaluationCriteria = typeof evaluationCriteria.$inferInsert;
 export type Score = typeof scores.$inferSelect;
 export type InsertScore = typeof scores.$inferInsert;
+export type ParticipantProfile = typeof participantProfiles.$inferSelect;
+export type InsertParticipantProfile = typeof participantProfiles.$inferInsert;
+export type HackathonRegistration = typeof hackathonRegistrations.$inferSelect;
+export type InsertHackathonRegistration = typeof hackathonRegistrations.$inferInsert;

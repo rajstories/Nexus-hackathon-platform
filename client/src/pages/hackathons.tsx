@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -317,6 +318,7 @@ const filterCategories = {
 };
 
 export default function HackathonsPage() {
+  const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("deadline");
   const [filters, setFilters] = useState<Record<string, string[]>>({});
@@ -585,7 +587,10 @@ export default function HackathonsPage() {
                         >
                           {hackathon.status}
                         </Badge>
-                        <Button className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all">
+                        <Button 
+                          className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                          onClick={() => navigate(`/register/${hackathon.id}`)}
+                        >
                           Register Now
                         </Button>
                       </div>
@@ -730,7 +735,13 @@ export default function HackathonsPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-orange-400 mb-1">{selectedHackathon?.prize}</div>
-                    <Button className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold">
+                    <Button 
+                      className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold"
+                      onClick={() => {
+                        setIsDetailModalOpen(false);
+                        navigate(`/register/${selectedHackathon?.id}`);
+                      }}
+                    >
                       Register Now
                     </Button>
                   </div>
