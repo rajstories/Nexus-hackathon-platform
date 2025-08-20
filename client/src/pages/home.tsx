@@ -722,12 +722,13 @@ export default function Home() {
                 Get Started for Organizers
               </Button>
               <Button 
+                onClick={() => setLocation('/hackathons')}
                 size="lg" 
                 variant="outline" 
                 className="border-2 border-slate-300 dark:border-white text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white hover:text-slate-900 px-12 py-4 text-lg font-bold rounded-full transition-all"
               >
-                <Play className="mr-2 h-5 w-5" />
-                Schedule Demo
+                <Trophy className="mr-2 h-5 w-5" />
+                Browse Events
               </Button>
             </div>
             <div className="flex flex-wrap justify-center gap-8 text-sm text-slate-400">
