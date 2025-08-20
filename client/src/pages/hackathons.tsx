@@ -168,42 +168,45 @@ export default function HackathonsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
       {/* Header */}
-      <div className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between mb-6">
+      <div className="border-b border-slate-700 bg-slate-900/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Explore Hackathons</h1>
-              <p className="text-slate-400">Discover amazing hackathons and coding competitions</p>
+              <h1 className="text-4xl font-bold text-white mb-3">Explore Hackathons</h1>
+              <p className="text-slate-300 text-lg">Discover amazing hackathons and coding competitions worldwide</p>
             </div>
             <Button 
               onClick={() => window.history.back()} 
               variant="outline"
-              className="border-slate-600 text-slate-300 hover:bg-slate-800"
+              className="border-slate-400 text-slate-200 hover:bg-slate-700 hover:border-slate-300 px-6 py-2"
             >
               ← Back
             </Button>
           </div>
 
           {/* Search and Filter Bar */}
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
               <Input
-                placeholder="Search hackathons..."
+                placeholder="Search hackathons by name or organization..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-slate-800 border-slate-600 text-white placeholder-slate-400"
+                className="pl-12 py-3 bg-white/10 border-slate-500 text-white placeholder-slate-300 rounded-lg text-lg backdrop-blur-sm focus:bg-white/20 focus:border-orange-400"
               />
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
-                    <Filter className="mr-2 h-4 w-4" />
+                  <Button 
+                    variant="outline" 
+                    className="border-slate-400 text-slate-200 hover:bg-slate-700 hover:border-orange-400 px-6 py-3 rounded-lg font-medium"
+                  >
+                    <Filter className="mr-2 h-5 w-5" />
                     Filters
                     {getActiveFilterCount() > 0 && (
-                      <Badge variant="secondary" className="ml-2 bg-orange-500 text-white">
+                      <Badge variant="secondary" className="ml-2 bg-orange-500 text-white font-bold">
                         {getActiveFilterCount()}
                       </Badge>
                     )}
@@ -264,11 +267,11 @@ export default function HackathonsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-slate-800 border border-slate-600 text-white rounded-md px-3 py-2"
+                className="bg-white/10 border border-slate-400 text-white rounded-lg px-4 py-3 font-medium backdrop-blur-sm focus:bg-white/20 focus:border-orange-400 cursor-pointer"
               >
-                <option value="deadline">Sort by Deadline</option>
-                <option value="prize">Sort by Prize</option>
-                <option value="registrations">Sort by Popularity</option>
+                <option value="deadline" className="bg-slate-800 text-white">Sort by Deadline</option>
+                <option value="prize" className="bg-slate-800 text-white">Sort by Prize</option>
+                <option value="registrations" className="bg-slate-800 text-white">Sort by Popularity</option>
               </select>
             </div>
           </div>
@@ -277,8 +280,8 @@ export default function HackathonsPage() {
 
       {/* Results */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-6">
-          <p className="text-slate-400">
+        <div className="mb-8">
+          <p className="text-slate-300 text-lg font-medium">
             Showing {filteredHackathons.length} of {hackathons.length} hackathons
           </p>
         </div>
@@ -291,23 +294,23 @@ export default function HackathonsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="bg-slate-800/50 border-slate-700 hover:border-orange-400/50 transition-all hover:shadow-xl p-6">
+              <Card className="bg-slate-800/60 border-slate-600 hover:border-orange-400/70 transition-all hover:shadow-2xl hover:shadow-orange-500/10 p-6 backdrop-blur-sm">
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Left Side - Main Info */}
                   <div className="flex-1">
                     <div className="flex items-start gap-4 mb-4">
                       <div className="text-4xl">{hackathon.logo}</div>
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-white mb-2">{hackathon.title}</h3>
-                        <p className="text-slate-400 mb-3">{hackathon.organization}</p>
-                        <p className="text-slate-300 text-sm mb-4">{hackathon.description}</p>
+                        <h3 className="text-2xl font-bold text-white mb-2 hover:text-orange-400 transition-colors cursor-pointer">{hackathon.title}</h3>
+                        <p className="text-slate-300 mb-3 font-medium">{hackathon.organization}</p>
+                        <p className="text-slate-200 text-sm mb-4 leading-relaxed">{hackathon.description}</p>
                         
                         <div className="flex flex-wrap gap-2">
                           {hackathon.tags.map(tag => (
                             <Badge 
                               key={tag} 
                               variant="secondary" 
-                              className="bg-slate-700 text-slate-300"
+                              className="bg-slate-700/80 text-slate-200 hover:bg-orange-500/20 hover:text-orange-300 transition-colors cursor-pointer"
                             >
                               {tag}
                             </Badge>
@@ -324,50 +327,50 @@ export default function HackathonsPage() {
                       <div className="flex justify-between items-center">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-orange-400">{hackathon.prize}</div>
-                          <div className="text-xs text-slate-400">Prize</div>
+                          <div className="text-xs text-slate-300 font-medium">Prize</div>
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-blue-400">{hackathon.registrations}</div>
-                          <div className="text-xs text-slate-400">Registered</div>
+                          <div className="text-xs text-slate-300 font-medium">Registered</div>
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-bold text-green-400">{hackathon.teamSize}</div>
-                          <div className="text-xs text-slate-400">Team Size</div>
+                          <div className="text-xs text-slate-300 font-medium">Team Size</div>
                         </div>
                       </div>
 
-                      <Separator className="bg-slate-700" />
+                      <Separator className="bg-slate-600" />
 
                       {/* Event Details */}
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-slate-400">
-                          <MapPin className="h-4 w-4" />
-                          <span>{hackathon.location}</span>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex items-center gap-3 text-slate-300">
+                          <MapPin className="h-4 w-4 text-orange-400" />
+                          <span className="font-medium">{hackathon.location}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-slate-400">
-                          <Calendar className="h-4 w-4" />
-                          <span>Deadline: {hackathon.deadline}</span>
+                        <div className="flex items-center gap-3 text-slate-300">
+                          <Calendar className="h-4 w-4 text-blue-400" />
+                          <span className="font-medium">Deadline: {hackathon.deadline}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-slate-400">
-                          <Users className="h-4 w-4" />
-                          <span>{hackathon.type}</span>
+                        <div className="flex items-center gap-3 text-slate-300">
+                          <Users className="h-4 w-4 text-green-400" />
+                          <span className="font-medium">{hackathon.type}</span>
                         </div>
                       </div>
 
-                      <Separator className="bg-slate-700" />
+                      <Separator className="bg-slate-600" />
 
                       {/* Status and Action */}
                       <div className="flex items-center justify-between">
                         <Badge 
                           className={hackathon.status === 'Open' 
-                            ? "bg-green-500/20 text-green-400 border-green-500/30" 
-                            : "bg-red-500/20 text-red-400 border-red-500/30"
+                            ? "bg-green-500/20 text-green-300 border-green-500/50 font-medium" 
+                            : "bg-red-500/20 text-red-300 border-red-500/50 font-medium"
                           }
                         >
                           {hackathon.status}
                         </Badge>
-                        <Button className="bg-blue-600 hover:bg-blue-700">
-                          Register
+                        <Button className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold px-6 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all">
+                          Register Now
                         </Button>
                       </div>
                     </div>
@@ -381,9 +384,9 @@ export default function HackathonsPage() {
         {filteredHackathons.length === 0 && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-white mb-2">No hackathons found</h3>
-            <p className="text-slate-400 mb-4">Try adjusting your search or filters</p>
-            <Button onClick={clearFilters} variant="outline" className="border-slate-600 text-slate-300">
+            <h3 className="text-2xl font-bold text-white mb-3">No hackathons found</h3>
+            <p className="text-slate-300 mb-6 text-lg">Try adjusting your search or filters</p>
+            <Button onClick={clearFilters} variant="outline" className="border-slate-400 text-slate-200 hover:bg-slate-700 px-6 py-2">
               Clear all filters
             </Button>
           </div>
