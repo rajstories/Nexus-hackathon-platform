@@ -23,6 +23,7 @@ import achievementsRouter from "./routes/achievements";
 import sentimentRouter from "./routes/sentiment";
 import performanceRouter from "./routes/performance";
 import participantRouter from "./routes/participants";
+import aiAnalyticsRouter from "./routes/ai-analytics";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { 
   authRateLimit, 
@@ -76,6 +77,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Analytics routes
   app.use('/api', analyticsRouter);
+  
+  // AI-powered analytics routes (competition feature)
+  app.use('/api/ai', verifyFirebaseToken, aiAnalyticsRouter);
   
   // Sponsors routes
   app.use('/api', sponsorsRouter);

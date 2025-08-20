@@ -70,6 +70,16 @@ app.use((req, res, next) => {
     console.warn('MongoDB connection failed, continuing without MongoDB features');
   }
 
+  // Connect to Azure SQL Database
+  try {
+    const { connectAzureSQL, initializeAzureSQLSchema } = await import('./db/azure-sql');
+    await connectAzureSQL();
+    await initializeAzureSQLSchema();
+    console.log('✅ Azure SQL Database connected and initialized');
+  } catch (error) {
+    console.warn('⚠️ Azure SQL connection failed, continuing without Azure SQL features');
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
