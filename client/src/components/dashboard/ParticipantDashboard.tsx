@@ -44,12 +44,12 @@ export function ParticipantDashboard() {
 
   // Fetch user's teams
   const { data: userTeams, isLoading: teamsLoading } = useQuery({
-    queryKey: ['/api/teams/me'],
+    queryKey: ['/api', 'teams', 'me'],
     enabled: !!user,
   });
 
   // Get the first team (assuming user can only be in one team per event for now)
-  const currentTeam = userTeams && userTeams.length > 0 ? userTeams[0] : null;
+  const currentTeam = userTeams && Array.isArray(userTeams) && userTeams.length > 0 ? userTeams[0] : null;
 
   // Show loading while auth is being determined
   if (loading) {
@@ -90,10 +90,8 @@ export function ParticipantDashboard() {
   // Create Team Mutation
   const createTeamMutation = useMutation({
     mutationFn: async (teamData: { name: string; event_id: string }) => {
-      return await apiRequest('/api/teams', {
-        method: 'POST',
-        body: JSON.stringify(teamData),
-      });
+      const response = await apiRequest('POST', '/api/teams', teamData);
+      return await response.json();
     },
     onSuccess: (data) => {
       toast({
@@ -102,7 +100,7 @@ export function ParticipantDashboard() {
       });
       setTeamDialogOpen(false);
       setTeamName("");
-      queryClient.invalidateQueries({ queryKey: ['/api/teams/me'] });
+      queryClient.invalidateQueries({ queryKey: ['/api', 'teams', 'me'] });
     },
     onError: (error: any) => {
       toast({
@@ -116,10 +114,8 @@ export function ParticipantDashboard() {
   // Join Team Mutation
   const joinTeamMutation = useMutation({
     mutationFn: async (inviteCode: string) => {
-      return await apiRequest('/api/teams/join', {
-        method: 'POST',
-        body: JSON.stringify({ invite_code: inviteCode }),
-      });
+      const response = await apiRequest('POST', '/api/teams/join', { invite_code: inviteCode });
+      return await response.json();
     },
     onSuccess: (data) => {
       toast({
@@ -127,7 +123,7 @@ export function ParticipantDashboard() {
         description: `You've successfully joined team "${data.team_name}"!`
       });
       setInviteCode("");
-      queryClient.invalidateQueries({ queryKey: ['/api/teams/me'] });
+      queryClient.invalidateQueries({ queryKey: ['/api', 'teams', 'me'] });
     },
     onError: (error: any) => {
       toast({
