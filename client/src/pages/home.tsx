@@ -390,7 +390,7 @@ export default function Home() {
                       ease: "easeInOut"
                     }
                   }}
-                  className="absolute top-32 left-8 bg-slate-800/80 backdrop-blur-sm border border-orange-400/30 rounded-lg p-3 shadow-lg"
+                  className="absolute top-32 -left-4 bg-slate-800/80 backdrop-blur-sm border border-orange-400/30 rounded-lg p-3 shadow-lg"
                 >
                   <motion.div 
                     className="text-orange-400 text-sm font-semibold"
