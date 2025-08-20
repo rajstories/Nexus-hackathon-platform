@@ -19,6 +19,18 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Debug logging for Firebase config (only in development)
+if (import.meta.env.DEV) {
+  console.log('Firebase Config Debug:', {
+    apiKey: firebaseConfig.apiKey ? 'Set' : 'Missing',
+    authDomain: firebaseConfig.authDomain,
+    projectId: firebaseConfig.projectId,
+    storageBucket: firebaseConfig.storageBucket,
+    messagingSenderId: firebaseConfig.messagingSenderId ? 'Set' : 'Missing',
+    appId: firebaseConfig.appId ? 'Set' : 'Missing',
+  });
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
@@ -32,15 +44,36 @@ export { googleProvider };
 
 // Auth functions
 export const createUserAccount = async (email: string, password: string) => {
-  return createUserWithEmailAndPassword(auth, email, password);
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    console.log('Account creation successful:', result.user.email);
+    return result;
+  } catch (error: any) {
+    console.error('Account creation error:', error.code, error.message);
+    throw error;
+  }
 };
 
 export const signInWithEmail = async (email: string, password: string) => {
-  return signInWithEmailAndPassword(auth, email, password);
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    console.log('Email sign-in successful:', result.user.email);
+    return result;
+  } catch (error: any) {
+    console.error('Email sign-in error:', error.code, error.message);
+    throw error;
+  }
 };
 
 export const signInWithGoogle = async () => {
-  return signInWithPopup(auth, googleProvider);
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    console.log('Google sign-in successful:', result.user.email);
+    return result;
+  } catch (error: any) {
+    console.error('Google sign-in error:', error.code, error.message);
+    throw error;
+  }
 };
 
 export const logOut = async () => {
