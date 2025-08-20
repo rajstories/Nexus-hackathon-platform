@@ -56,120 +56,143 @@ export default function Home() {
 
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
         {/* Navigation */}
-        <nav className="bg-slate-900/90 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center gap-2">
-                <Code className="h-8 w-8 text-blue-400" />
-                <h1 className="text-2xl font-bold text-white">
-                  Fusion<span className="text-blue-400">X</span>
-                </h1>
+        <nav className="w-full py-6">
+          <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="text-2xl font-bold text-white">
+                Fusion<span className="text-orange-400">X</span>
+                <div className="text-xs text-slate-400 mt-1">by Advanced Platform</div>
               </div>
-              <div className="hidden md:flex items-center space-x-8 text-slate-300">
-                <a href="#features" className="hover:text-white transition-colors">Features</a>
-                <a href="#tech" className="hover:text-white transition-colors">Technology</a>
-                <a href="#demo" className="hover:text-white transition-colors">Demo</a>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Link href="/auth">
-                  <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
-                    Sign In
-                  </Button>
-                </Link>
-                <Link href="/auth">
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white" data-testid="button-start-demo">
-                    <Rocket className="h-4 w-4 mr-2" />
-                    Start Live Demo
-                  </Button>
-                </Link>
-              </div>
+            </div>
+            <div className="hidden md:flex items-center space-x-8 text-slate-300">
+              <a href="#features" className="hover:text-white transition-colors">Features</a>
+              <a href="#tech" className="hover:text-white transition-colors">Technology</a>
+              <a href="#about" className="hover:text-white transition-colors">About</a>
+              <a href="#demo" className="hover:text-white transition-colors">Demo</a>
+              <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+            </div>
+            <div>
+              <Link href="/auth">
+                <Button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-medium" data-testid="button-register">
+                  Register
+                </Button>
+              </Link>
             </div>
           </div>
         </nav>
 
         {/* Hero Section */}
-        <section className="relative overflow-hidden py-20 sm:py-32">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <div className="mb-6">
-                <Badge className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 text-sm font-medium">
-                  🏆 Competition-Winning Platform
-                </Badge>
-              </div>
-              <h1 className="text-5xl sm:text-7xl font-bold text-white mb-6">
-                Fusion<span className="text-blue-400">X</span>
-              </h1>
-              <p className="text-2xl text-slate-300 mb-4 max-w-4xl mx-auto">
-                Advanced Hackathon Platform
-              </p>
-              <p className="text-lg text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Host and participate in hackathons with Web3 badges, AI sentiment analysis, real-time collaboration, 
-                and enterprise-grade performance. Built for modern teams.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-                <Link href="/auth">
-                  <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 text-lg" data-testid="button-demo-primary">
-                    <Zap className="mr-2 h-5 w-5" />
-                    Start Live Demo
+        <section className="relative min-h-screen flex items-center overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6 w-full">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Left Content */}
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <h2 className="text-4xl md:text-5xl font-light text-white leading-tight">
+                    Learn, Build, Innovate
+                  </h2>
+                  <h1 className="text-6xl md:text-7xl font-bold leading-tight">
+                    <span className="text-transparent bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500 bg-clip-text">
+                      FusionX
+                    </span>
+                  </h1>
+                  <p className="text-xl md:text-2xl text-slate-300 font-light">
+                    Next-Gen Web3 & AI Hackathon Platform
+                  </p>
+                </div>
+                
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/auth">
+                    <Button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full text-lg font-medium" data-testid="button-register-now">
+                      Register Now
+                    </Button>
+                  </Link>
+                  <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-3 rounded-full text-lg" data-testid="button-view-features">
+                    View Features
                   </Button>
-                </Link>
-                <Link href="/auth">
-                  <Button size="lg" className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4 text-lg" data-testid="button-quick-start">
-                    <Rocket className="mr-2 h-5 w-5" />
-                    Quick Start
-                  </Button>
-                </Link>
-                <Button variant="outline" size="lg" className="border-slate-600 text-slate-300 hover:bg-slate-800 px-8 py-4 text-lg" data-testid="button-view-demo">
-                  ▶ View Demo
-                </Button>
+                </div>
               </div>
               
-              {/* Terminal Demo */}
-              <div className="max-w-3xl mx-auto">
-                <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-                  <div className="flex items-center gap-2 px-4 py-3 bg-slate-900 border-b border-slate-700">
-                    <div className="flex gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              {/* Right 3D Illustration */}
+              <div className="relative flex items-center justify-center">
+                <div className="relative w-full max-w-lg">
+                  {/* Main Monitor */}
+                  <div className="relative transform rotate-12 hover:rotate-6 transition-transform duration-300">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border-4 border-orange-400/30 p-6 shadow-2xl">
+                      <div className="bg-slate-900 rounded h-48 border border-slate-700 flex items-center justify-center">
+                        <div className="text-6xl font-bold text-orange-400">FX</div>
+                      </div>
+                      <div className="mt-4 h-2 bg-slate-700 rounded"></div>
+                      <div className="mt-2 flex gap-2">
+                        <div className="h-1 bg-orange-400 rounded flex-1"></div>
+                        <div className="h-1 bg-slate-700 rounded flex-1"></div>
+                        <div className="h-1 bg-slate-700 rounded flex-1"></div>
+                      </div>
                     </div>
-                    <span className="text-slate-400 text-sm ml-2">Terminal</span>
+                    <div className="bg-gradient-to-br from-orange-500 to-yellow-500 h-4 rounded-b-lg mx-4"></div>
+                    <div className="bg-slate-800 h-6 w-16 mx-auto rounded-b-lg"></div>
                   </div>
-                  <div className="p-6 font-mono text-sm">
-                    <div className="text-green-400">$ npm run dev</div>
-                    <div className="text-pink-400 mt-2">🚀 React running on http://localhost:5000</div>
-                    <div className="text-yellow-400">⚡ API server running on http://localhost:8000</div>
-                    <div className="text-green-400 mt-2">✅ Both apps healthy and ready!</div>
+                  
+                  {/* Floating Icons */}
+                  <div className="absolute -top-8 -left-8 transform hover:scale-110 transition-transform">
+                    <div className="bg-gradient-to-br from-blue-500 to-purple-500 w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg">
+                      🏆
+                    </div>
                   </div>
+                  
+                  <div className="absolute top-16 -right-12 transform hover:scale-110 transition-transform">
+                    <div className="bg-gradient-to-br from-green-500 to-emerald-500 w-14 h-14 rounded-xl flex items-center justify-center text-white text-xl shadow-lg">
+                      ⚡
+                    </div>
+                  </div>
+                  
+                  <div className="absolute -bottom-4 -left-12 transform hover:scale-110 transition-transform">
+                    <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg shadow-lg">
+                      🧠
+                    </div>
+                  </div>
+                  
+                  <div className="absolute bottom-20 -right-8 transform hover:scale-110 transition-transform">
+                    <div className="bg-gradient-to-br from-yellow-500 to-orange-500 w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm shadow-lg">
+                      🔒
+                    </div>
+                  </div>
+                  
+                  {/* Geometric Shapes */}
+                  <div className="absolute top-1/2 -left-16 w-8 h-8 bg-orange-400/20 rounded-full animate-pulse"></div>
+                  <div className="absolute top-1/4 right-0 w-6 h-6 bg-blue-400/20 rotate-45 animate-pulse"></div>
                 </div>
               </div>
             </div>
           </div>
+          
+          {/* Bottom Preview/Indicator */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <div className="w-3 h-3 bg-orange-400 rounded-full animate-bounce"></div>
+          </div>
         </section>
 
-        {/* Why FusionX Section */}
-        <section id="features" className="py-20 bg-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Features Section */}
+        <section id="features" className="py-24 bg-slate-800/50">
+          <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                Why <span className="text-blue-400">FusionX</span>?
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Why <span className="text-orange-400">FusionX</span>?
               </h2>
-              <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-                Everything you need to host successful hackathons with cutting-edge features and modern innovation.
+              <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+                Everything you need to host successful hackathons with cutting-edge innovation.
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {features.map((feature, index) => (
-                <Card key={index} className="bg-slate-900 border-slate-700 hover:border-slate-600 transition-all hover:shadow-xl" data-testid={`card-feature-${index}`}>
+                <Card key={index} className="bg-slate-900/50 border-slate-700 hover:border-orange-400/50 transition-all hover:shadow-xl hover:scale-105" data-testid={`card-feature-${index}`}>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {feature.icon}
-                        <div>
-                          <CardTitle className="text-lg text-white">{feature.title}</CardTitle>
-                          <Badge className="mt-1 text-xs" variant="secondary">{feature.badge}</Badge>
-                        </div>
+                    <div className="flex items-center gap-3">
+                      {feature.icon}
+                      <div>
+                        <CardTitle className="text-lg text-white">{feature.title}</CardTitle>
+                        <Badge className="mt-1 text-xs bg-orange-500/20 text-orange-400 border-orange-500/30">{feature.badge}</Badge>
                       </div>
                     </div>
                   </CardHeader>
@@ -184,189 +207,86 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Project Structure */}
-        <section id="tech" className="py-20 bg-slate-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Technology Stack */}
+        <section id="tech" className="py-24 bg-slate-900">
+          <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                Project Structure
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Advanced Technology Stack
               </h2>
-              <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-                Clean, organized, and scalable architecture designed for modern development teams.
+              <p className="text-xl text-slate-400 max-w-3xl mx-auto">
+                Built with cutting-edge technologies for enterprise-grade performance.
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 bg-slate-900 border-b border-slate-700">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  </div>
-                  <span className="text-slate-400 text-sm ml-2">fusion-x/</span>
-                </div>
-                <div className="p-6 font-mono text-sm space-y-1">
-                  <div className="text-blue-400">pages/</div>
-                  <div className="text-slate-400 ml-4"># Next.js pages</div>
-                  <div className="text-blue-400">server/</div>
-                  <div className="text-slate-400 ml-4"># Express API</div>
-                  <div className="text-blue-400">shared/</div>
-                  <div className="text-slate-400 ml-4"># Shared types & schemas</div>
-                  <div className="text-slate-300">package.json</div>
-                  <div className="text-slate-300">tsconfig.json</div>
-                  <div className="text-slate-300">README.md</div>
-                </div>
-              </div>
-              
-              <div className="space-y-6">
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Code className="h-6 w-6 text-blue-400" />
-                      <CardTitle className="text-white">Web Application</CardTitle>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+              {[
+                { name: "Web3 & NFTs", desc: "Blockchain Integration", icon: "🔗", color: "from-yellow-400 to-orange-500" },
+                { name: "AI Analysis", desc: "Smart Monitoring", icon: "🧠", color: "from-purple-400 to-pink-500" },
+                { name: "Real-time", desc: "WebSocket Power", icon: "⚡", color: "from-blue-400 to-cyan-500" },
+                { name: "Enterprise", desc: "Production Ready", icon: "🏢", color: "from-green-400 to-emerald-500" },
+              ].map((tech, index) => (
+                <Card key={index} className="bg-slate-800/50 border-slate-700 hover:border-orange-400/50 transition-all text-center">
+                  <CardContent className="pt-6">
+                    <div className={`text-4xl mb-4 p-4 rounded-full bg-gradient-to-r ${tech.color} w-fit mx-auto`}>
+                      {tech.icon}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-slate-400">Next.js with TypeScript, TailwindCSS, shadcn/ui components, and advanced animations.</p>
+                    <div className="text-lg font-semibold text-white mb-2">
+                      {tech.name}
+                    </div>
+                    <div className="text-sm text-slate-400">
+                      {tech.desc}
+                    </div>
                   </CardContent>
                 </Card>
-                
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded bg-green-500 flex items-center justify-center">
-                        <div className="w-3 h-3 bg-white rounded-sm"></div>
-                      </div>
-                      <CardTitle className="text-white">API Server</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-slate-400">Express server with TypeScript and production builds.</p>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-slate-800 border-slate-700">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded bg-orange-500 flex items-center justify-center">
-                        <div className="w-3 h-3 bg-white rounded-full"></div>
-                      </div>
-                      <CardTitle className="text-white">Shared Types</CardTitle>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-slate-400">Common TypeScript interfaces, DTOs, and Zod schemas used across frontend and backend.</p>
-                  </CardContent>
-                </Card>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* Get Started Section */}
-        <section id="demo" className="py-20 bg-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-                Get Started in Minutes
-              </h2>
-              <p className="text-lg text-slate-400 max-w-3xl mx-auto">
-                Three simple steps to have your hackathon platform up and running.
-              </p>
-            </div>
-
-            <div className="space-y-12">
-              <div className="grid lg:grid-cols-2 gap-8 items-center">
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                    1
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-2">Clone & Install</h3>
-                    <p className="text-slate-400">Get the complete platform with all advanced features included.</p>
-                  </div>
-                </div>
-                <div className="bg-slate-900 rounded-lg border border-slate-700 p-4 font-mono text-sm">
-                  <div className="text-green-400">$ git clone https://github.com/your-org/fusion-x.git</div>
-                  <div className="text-green-400">$ cd fusion-x</div>
-                  <div className="text-green-400">$ npm install</div>
-                </div>
-              </div>
-
-              <div className="grid lg:grid-cols-2 gap-8 items-center">
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                    2
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-2">Start Development</h3>
-                    <p className="text-slate-400">Launch the full-stack application with hot reload and live features.</p>
-                  </div>
-                </div>
-                <div className="bg-slate-900 rounded-lg border border-slate-700 p-4 font-mono text-sm">
-                  <div className="text-green-400">$ npm run dev</div>
-                  <div className="text-pink-400 mt-2">🚀 React running on http://localhost:5000</div>
-                  <div className="text-yellow-400">⚡ API server running on http://localhost:8000</div>
-                </div>
-              </div>
-
-              <div className="grid lg:grid-cols-2 gap-8 items-center">
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                    3
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-2">Build & Deploy</h3>
-                    <p className="text-slate-400">Deploy to Azure with automated CI/CD and enterprise scaling.</p>
-                  </div>
-                </div>
-                <div className="bg-slate-900 rounded-lg border border-slate-700 p-4 font-mono text-sm">
-                  <div className="text-green-400">$ npm run build</div>
-                  <div className="text-green-400">$ npm run start</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-center mt-16">
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/auth">
-                  <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 text-lg" data-testid="button-final-demo">
-                    <Zap className="mr-2 h-5 w-5" />
-                    Start Live Demo
-                  </Button>
-                </Link>
-                <Link href="/auth">
-                  <Button size="lg" className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4 text-lg" data-testid="button-final-start">
-                    <Rocket className="mr-2 h-5 w-5" />
-                    Quick Start
-                  </Button>
-                </Link>
-              </div>
+        {/* CTA Section */}
+        <section id="demo" className="py-24 bg-gradient-to-r from-orange-600/20 via-yellow-600/20 to-orange-600/20">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              Ready to Build the Future?
+            </h2>
+            <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+              Join thousands of innovators using FusionX to create amazing hackathon experiences with Web3, AI, and cutting-edge technology.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/auth">
+                <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white px-12 py-4 text-lg font-semibold rounded-full" data-testid="button-start-building">
+                  Start Building Now
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-slate-900 px-12 py-4 text-lg font-semibold rounded-full" data-testid="button-learn-more">
+                Learn More
+              </Button>
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="bg-slate-900 border-t border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <footer className="bg-slate-950 border-t border-slate-800">
+          <div className="max-w-7xl mx-auto px-6 py-12">
             <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <Code className="h-8 w-8 text-blue-400" />
+              <div className="mb-6">
                 <h3 className="text-2xl font-bold text-white">
-                  Fusion<span className="text-blue-400">X</span>
+                  Fusion<span className="text-orange-400">X</span>
+                  <div className="text-xs text-slate-400 mt-1">by Advanced Platform</div>
                 </h3>
               </div>
-              <p className="text-slate-400 mb-8">Advanced Hackathon Platform with Web3, AI, and Enterprise Features</p>
-              <div className="flex justify-center space-x-8 mb-8">
-                <a href="#features" className="text-slate-400 hover:text-white transition-colors">Features</a>
-                <a href="#tech" className="text-slate-400 hover:text-white transition-colors">Technology</a>
-                <a href="#demo" className="text-slate-400 hover:text-white transition-colors">Get Started</a>
-                <Link href="/auth" className="text-slate-400 hover:text-white transition-colors">Demo</Link>
+              <p className="text-slate-400 mb-8">Next-Gen Web3 & AI Hackathon Platform with Enterprise Features</p>
+              <div className="flex flex-wrap justify-center gap-8 mb-8 text-sm">
+                <a href="#features" className="text-slate-400 hover:text-orange-400 transition-colors">Features</a>
+                <a href="#tech" className="text-slate-400 hover:text-orange-400 transition-colors">Technology</a>
+                <a href="#about" className="text-slate-400 hover:text-orange-400 transition-colors">About</a>
+                <Link href="/auth" className="text-slate-400 hover:text-orange-400 transition-colors">Demo</Link>
+                <a href="#contact" className="text-slate-400 hover:text-orange-400 transition-colors">Contact</a>
               </div>
               <div className="pt-8 border-t border-slate-800">
                 <p className="text-slate-500 text-sm">
-                  © 2024 FusionX. Competition-grade hackathon platform with cutting-edge innovation.
+                  © 2024 FusionX. Empowering innovation through advanced hackathon technology.
                 </p>
               </div>
             </div>
