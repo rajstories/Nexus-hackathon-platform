@@ -15,9 +15,14 @@ const firebaseConfig = {
   authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+// Validate required config
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId || !firebaseConfig.appId) {
+  console.error('Missing required Firebase configuration');
+}
 
 // Debug logging for Firebase config (only in development)
 if (import.meta.env.DEV) {
@@ -72,7 +77,29 @@ export const signInWithGoogle = async () => {
     return result;
   } catch (error: any) {
     console.error('Google sign-in error:', error.code, error.message);
-    throw error;
+    
+    // Provide user-friendly error messages
+    let userMessage = 'Google sign-in failed. ';
+    switch (error.code) {
+      case 'auth/popup-closed-by-user':
+        userMessage += 'Sign-in was cancelled.';
+        break;
+      case 'auth/popup-blocked':
+        userMessage += 'Popup was blocked by browser.';
+        break;
+      case 'auth/unauthorized-domain':
+        userMessage += 'This domain is not authorized for Google sign-in.';
+        break;
+      case 'auth/internal-error':
+        userMessage += 'Internal error occurred. Please try again.';
+        break;
+      default:
+        userMessage += 'Please try again or contact support.';
+    }
+    
+    const customError = new Error(userMessage);
+    customError.name = error.code || 'GoogleSignInError';
+    throw customError;
   }
 };
 
