@@ -41,50 +41,85 @@ export const verifyFirebaseToken = async (
 
     const token = authHeader.split('Bearer ')[1];
     
-    // Development mode: handle mock tokens for testing
-    if (process.env.NODE_ENV === 'development' && token.startsWith('test-')) {
-      // Mock user data for development
-      const mockUsers = {
+    // Development mode: handle mock tokens for testing OR allow role override
+    if (process.env.NODE_ENV === 'development' && (token.startsWith('test-') || req.headers['x-dev-role'])) {
+      // Handle role override for real Firebase tokens in development
+      if (req.headers['x-dev-role'] && !token.startsWith('test-')) {
+        try {
+          const decodedToken = await admin.auth().verifyIdToken(token);
+          const devRole = req.headers['x-dev-role'] as string;
+          
+          if (['participant', 'organizer', 'judge'].includes(devRole)) {
+            let user = await storage.getUserByFirebaseUid(decodedToken.uid);
+            
+            if (!user) {
+              user = await storage.upsertUserFromFirebase(
+                decodedToken.uid,
+                decodedToken.name || decodedToken.email?.split('@')[0] || 'User',
+                decodedToken.email || 'user@example.com'
+              );
+            }
+            
+            // Temporarily override role for development
+            req.user = {
+              firebaseUid: decodedToken.uid,
+              email: decodedToken.email || 'user@example.com',
+              role: devRole as 'participant' | 'organizer' | 'judge',
+              userId: user.id,
+            };
+            
+            return next();
+          }
+        } catch (error) {
+          console.error('Dev role override error:', error);
+        }
+      }
+      
+      // Original mock token handling
+      if (token.startsWith('test-')) {
+        // Mock user data for development
+        const mockUsers = {
         'test-user1-token': { uid: 'user1-uid', email: 'user1@test.com', name: 'Test User 1', role: 'participant' as const },
         'test-user2-token': { uid: 'user2-uid', email: 'user2@test.com', name: 'Test User 2', role: 'participant' as const },
         'test-organizer-token': { uid: 'organizer-uid', email: 'organizer@test.com', name: 'Test Organizer', role: 'organizer' as const },
-        'test-judge-token': { uid: 'judge-uid', email: 'judge@test.com', name: 'Test Judge', role: 'judge' as const },
-      };
-      
-      const mockUser = mockUsers[token as keyof typeof mockUsers];
-      if (!mockUser) {
-        return res.status(401).json({
-          error: 'Unauthorized',
-          message: 'Invalid mock token'
-        });
-      }
-      
-      // Use storage instead of UserRepository for consistency
-      let user = await storage.getUserByFirebaseUid(mockUser.uid);
-      
-      if (!user) {
-        // Auto-create user if they don't exist
-        user = await storage.upsertUserFromFirebase(mockUser.uid, mockUser.name, mockUser.email);
+          'test-judge-token': { uid: 'judge-uid', email: 'judge@test.com', name: 'Test Judge', role: 'judge' as const },
+        };
         
-        // Update role for non-participants
-        if (mockUser.role !== 'participant') {
-          const [updatedUser] = await db
-            .update(users)
-            .set({ role: mockUser.role, updatedAt: new Date() })
-            .where(eq(users.firebaseUid, mockUser.uid))
-            .returning();
-          user = updatedUser;
+        const mockUser = mockUsers[token as keyof typeof mockUsers];
+        if (!mockUser) {
+          return res.status(401).json({
+            error: 'Unauthorized',
+            message: 'Invalid mock token'
+          });
         }
+      
+        // Use storage instead of UserRepository for consistency
+        let user = await storage.getUserByFirebaseUid(mockUser.uid);
+        
+        if (!user) {
+          // Auto-create user if they don't exist
+          user = await storage.upsertUserFromFirebase(mockUser.uid, mockUser.name, mockUser.email);
+          
+          // Update role for non-participants
+          if (mockUser.role !== 'participant') {
+            const [updatedUser] = await db
+              .update(users)
+              .set({ role: mockUser.role, updatedAt: new Date() })
+              .where(eq(users.firebaseUid, mockUser.uid))
+              .returning();
+            user = updatedUser;
+          }
+        }
+
+        req.user = {
+          firebaseUid: mockUser.uid,
+          email: mockUser.email,
+          role: user.role as 'participant' | 'organizer' | 'judge',
+          userId: user.id,
+        };
+
+        return next();
       }
-
-      req.user = {
-        firebaseUid: mockUser.uid,
-        email: mockUser.email,
-        role: user.role as 'participant' | 'organizer' | 'judge',
-        userId: user.id,
-      };
-
-      return next();
     }
     
     // Production mode: verify actual Firebase token

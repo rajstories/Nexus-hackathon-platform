@@ -8,6 +8,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { AuthProvider } from "./contexts/AuthContext";
 import { EventStatusBar } from "./components/EventStatusBar";
 import { useAnnouncementToasts } from "./components/AnnouncementToast";
+import { DevRoleSwitcher } from "./components/DevRoleSwitcher";
 import Home from "./pages/home";
 import Auth from "./pages/auth";
 import Dashboard from "./pages/dashboard";
@@ -60,6 +61,7 @@ function AppContent() {
 
   return (
     <>
+      <DevRoleSwitcher />
       {eventData && <EventStatusBar eventData={eventData} />}
       <div className={eventData ? "pt-14" : ""}>
         <Router />

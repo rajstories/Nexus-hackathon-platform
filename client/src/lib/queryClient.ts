@@ -20,6 +20,14 @@ export async function apiRequest(
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
+  
+  // Development role override
+  if (import.meta.env.DEV) {
+    const devRole = localStorage.getItem('devRole');
+    if (devRole) {
+      headers['x-dev-role'] = devRole;
+    }
+  }
 
   const res = await fetch(url, {
     method,
@@ -47,6 +55,14 @@ export const getQueryFn: <T>(options: {
     
     if (token) {
       headers.Authorization = `Bearer ${token}`;
+    }
+    
+    // Development role override
+    if (import.meta.env.DEV) {
+      const devRole = localStorage.getItem('devRole');
+      if (devRole) {
+        headers['x-dev-role'] = devRole;
+      }
     }
 
     const res = await fetch(queryKey.join("/") as string, {

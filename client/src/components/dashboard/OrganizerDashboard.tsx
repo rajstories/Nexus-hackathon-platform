@@ -121,10 +121,22 @@ export function OrganizerDashboard() {
   });
 
   const handleCreateEvent = () => {
+    console.log('Form data:', newEventData); // Debug log
+    
     if (!newEventData.title || !newEventData.description || !newEventData.startDate || !newEventData.endDate) {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check if dates are valid datetime-local format
+    if (newEventData.startDate.includes('--') || newEventData.endDate.includes('--')) {
+      toast({
+        title: "Error",
+        description: "Please set valid start and end times.",
         variant: "destructive"
       });
       return;
@@ -266,23 +278,25 @@ export function OrganizerDashboard() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="start-date">Start Date</Label>
+                          <Label htmlFor="start-date">Start Date & Time</Label>
                           <Input 
                             id="start-date" 
                             type="datetime-local" 
                             data-testid="input-start-date"
                             value={newEventData.startDate}
                             onChange={(e) => setNewEventData({...newEventData, startDate: e.target.value})}
+                            min={new Date().toISOString().slice(0, 16)}
                           />
                         </div>
                         <div>
-                          <Label htmlFor="end-date">End Date</Label>
+                          <Label htmlFor="end-date">End Date & Time</Label>
                           <Input 
                             id="end-date" 
                             type="datetime-local" 
                             data-testid="input-end-date"
                             value={newEventData.endDate}
                             onChange={(e) => setNewEventData({...newEventData, endDate: e.target.value})}
+                            min={newEventData.startDate || new Date().toISOString().slice(0, 16)}
                           />
                         </div>
                       </div>
