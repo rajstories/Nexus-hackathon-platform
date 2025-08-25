@@ -11,7 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 import { 
   Settings, 
   Calendar, 
@@ -26,7 +29,8 @@ import {
   Trophy,
   FileText,
   UserCheck,
-  Shield
+  Shield,
+  CalendarIcon
 } from "lucide-react";
 import { SimilarityPanel } from '@/components/SimilarityPanel';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
@@ -101,6 +105,14 @@ export function OrganizerDashboard() {
         title: "Event Created",
         description: "New hackathon event has been created successfully!"
       });
+      // Reset form
+      setNewEventData({
+        title: '',
+        description: '',
+        mode: 'hybrid',
+        startDate: new Date(),
+        endDate: new Date()
+      });
       setEventDialogOpen(false);
     },
     onError: () => {
@@ -116,8 +128,8 @@ export function OrganizerDashboard() {
     title: '',
     description: '',
     mode: 'hybrid',
-    startDate: '',
-    endDate: ''
+    startDate: new Date(),
+    endDate: new Date()
   });
 
   const handleCreateEvent = () => {
@@ -132,11 +144,11 @@ export function OrganizerDashboard() {
       return;
     }
     
-    // Check if dates are valid datetime-local format
-    if (newEventData.startDate.includes('--') || newEventData.endDate.includes('--')) {
+    // Validate dates
+    if (newEventData.endDate <= newEventData.startDate) {
       toast({
         title: "Error",
-        description: "Please set valid start and end times.",
+        description: "End date must be after start date.",
         variant: "destructive"
       });
       return;
@@ -146,8 +158,8 @@ export function OrganizerDashboard() {
       title: newEventData.title,
       description: newEventData.description,
       mode: newEventData.mode,
-      start_at: newEventData.startDate,
-      end_at: newEventData.endDate
+      start_at: newEventData.startDate.toISOString(),
+      end_at: newEventData.endDate.toISOString()
     };
     
     createEventMutation.mutate(eventData);
@@ -278,26 +290,52 @@ export function OrganizerDashboard() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="start-date">Start Date & Time</Label>
-                          <Input 
-                            id="start-date" 
-                            type="datetime-local" 
-                            data-testid="input-start-date"
-                            value={newEventData.startDate}
-                            onChange={(e) => setNewEventData({...newEventData, startDate: e.target.value})}
-                            min={new Date().toISOString().slice(0, 16)}
-                          />
+                          <Label>Start Date</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-full justify-start text-left font-normal"
+                                data-testid="button-start-date"
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {newEventData.startDate ? format(newEventData.startDate, "PPP") : "Pick a date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <CalendarComponent
+                                mode="single"
+                                selected={newEventData.startDate}
+                                onSelect={(date) => date && setNewEventData({...newEventData, startDate: date})}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                         <div>
-                          <Label htmlFor="end-date">End Date & Time</Label>
-                          <Input 
-                            id="end-date" 
-                            type="datetime-local" 
-                            data-testid="input-end-date"
-                            value={newEventData.endDate}
-                            onChange={(e) => setNewEventData({...newEventData, endDate: e.target.value})}
-                            min={newEventData.startDate || new Date().toISOString().slice(0, 16)}
-                          />
+                          <Label>End Date</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-full justify-start text-left font-normal"
+                                data-testid="button-end-date"
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {newEventData.endDate ? format(newEventData.endDate, "PPP") : "Pick a date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <CalendarComponent
+                                mode="single"
+                                selected={newEventData.endDate}
+                                onSelect={(date) => date && setNewEventData({...newEventData, endDate: date})}
+                                disabled={(date) => date < newEventData.startDate}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
                       </div>
                       <Button 
