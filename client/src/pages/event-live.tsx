@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnnouncementPanel } from '@/components/AnnouncementPanel';
 import { ChatPanel } from '@/components/ChatPanel';
 import { LiveLeaderboard } from '@/components/LiveLeaderboard';
+import { EventReviews } from '@/components/EventReviews';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'wouter';
 import { ArrowLeft, Wifi, WifiOff, Users, Calendar, Clock } from 'lucide-react';
@@ -109,10 +110,11 @@ export function EventLivePage() {
 
       <div className="container mx-auto px-4 py-6">
         <Tabs defaultValue="leaderboard" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="leaderboard">Live Leaderboard</TabsTrigger>
             <TabsTrigger value="announcements">Announcements</TabsTrigger>
             <TabsTrigger value="chat">Q&A Chat</TabsTrigger>
+            <TabsTrigger value="reviews">Event Reviews</TabsTrigger>
           </TabsList>
           
           <TabsContent value="leaderboard" className="space-y-4">
@@ -159,6 +161,15 @@ export function EventLivePage() {
                 authToken={authToken}
               />
             </div>
+          </TabsContent>
+          
+          <TabsContent value="reviews" className="space-y-4">
+            <EventReviews
+              eventId={mockEvent.id}
+              userRole={userRole}
+              authToken={authToken}
+              className="h-[calc(100vh-250px)] overflow-y-auto"
+            />
           </TabsContent>
         </Tabs>
 

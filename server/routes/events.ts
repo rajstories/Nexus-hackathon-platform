@@ -2,6 +2,11 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { verifyFirebaseToken, requireRole, type AuthenticatedRequest } from '../lib/firebase-admin';
 import { EventRepository } from '../db/repositories/EventRepository';
 import { UserRepository } from '../db/repositories/UserRepository';
+import { db } from '../db';
+import { 
+  events, eventReviews, teamMembers, teams, judgeAssignments, users, submissions 
+} from '@shared/schema';
+import { eq, and, sql, desc, avg, count } from 'drizzle-orm';
 import { 
   CreateEventSchema, 
   CreateTrackSchema, 
@@ -15,8 +20,20 @@ import {
   SetFeedbackReleaseRequest
 } from '../types/event';
 import { ZodError } from 'zod';
+import { z } from 'zod';
 
 const router = Router();
+
+// Validation schemas for event reviews
+const createReviewSchema = z.object({
+  rating: z.number().int().min(1, 'Rating must be at least 1').max(5, 'Rating must be at most 5'),
+  body: z.string().min(10, 'Review body must be at least 10 characters').max(2000, 'Review body must be at most 2000 characters'),
+});
+
+const updateReviewSchema = z.object({
+  rating: z.number().int().min(1, 'Rating must be at least 1').max(5, 'Rating must be at most 5').optional(),
+  body: z.string().min(10, 'Review body must be at least 10 characters').max(2000, 'Review body must be at most 2000 characters').optional(),
+});
 
 // Helper function to format validation errors
 const formatZodErrors = (error: ZodError) => {
@@ -293,5 +310,445 @@ router.use((error: any, req: Request, res: Response, next: NextFunction) => {
     message: 'An unexpected error occurred'
   });
 });
+
+// Helper function to check if user is verified for an event (participant, judge, or organizer)
+async function isUserVerifiedForEvent(eventId: string, userId: string): Promise<{ isVerified: boolean; role?: string }> {
+  // Check if user is organizer
+  const event = await db
+    .select({ organizerId: events.organizerId })
+    .from(events)
+    .where(eq(events.id, eventId))
+    .limit(1);
+
+  if (event.length && event[0].organizerId === userId) {
+    return { isVerified: true, role: 'organizer' };
+  }
+
+  // Check if user is a judge
+  const judgeAssignment = await db
+    .select()
+    .from(judgeAssignments)
+    .where(
+      and(
+        eq(judgeAssignments.eventId, eventId),
+        eq(judgeAssignments.judgeId, userId)
+      )
+    )
+    .limit(1);
+
+  if (judgeAssignment.length) {
+    return { isVerified: true, role: 'judge' };
+  }
+
+  // Check if user is a participant (team member with submission)
+  const participation = await db
+    .select()
+    .from(teamMembers)
+    .innerJoin(teams, eq(teams.id, teamMembers.teamId))
+    .innerJoin(submissions, eq(submissions.teamId, teams.id))
+    .where(
+      and(
+        eq(teamMembers.userId, userId),
+        eq(teams.eventId, eventId)
+      )
+    )
+    .limit(1);
+
+  if (participation.length) {
+    return { isVerified: true, role: 'participant' };
+  }
+
+  return { isVerified: false };
+}
+
+// POST /events/:id/reviews - Create or upsert event review (verified users only)
+router.post('/:id/reviews',
+  verifyFirebaseToken,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const { rating, body } = createReviewSchema.parse(req.body);
+      const userFirebaseUid = req.user!.firebaseUid || req.user!.userId;
+
+      // Get user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userFirebaseUid))
+        .limit(1);
+
+      if (!user) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not found'
+        });
+      }
+
+      // Check if user is verified for this event
+      const { isVerified, role } = await isUserVerifiedForEvent(eventId, user.id);
+      
+      if (!isVerified) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'Only verified participants, judges, and organizers can review events'
+        });
+      }
+
+      // Check if event exists
+      const eventExists = await db
+        .select()
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!eventExists.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Event not found'
+        });
+      }
+
+      // Check if review already exists (for upsert)
+      const existingReview = await db
+        .select()
+        .from(eventReviews)
+        .where(
+          and(
+            eq(eventReviews.eventId, eventId),
+            eq(eventReviews.userId, user.id)
+          )
+        )
+        .limit(1);
+
+      let review;
+      if (existingReview.length) {
+        // Update existing review
+        [review] = await db
+          .update(eventReviews)
+          .set({
+            rating,
+            body,
+            role: role!,
+          })
+          .where(
+            and(
+              eq(eventReviews.eventId, eventId),
+              eq(eventReviews.userId, user.id)
+            )
+          )
+          .returning();
+      } else {
+        // Create new review
+        [review] = await db
+          .insert(eventReviews)
+          .values({
+            eventId,
+            userId: user.id,
+            role: role!,
+            rating,
+            body,
+          })
+          .returning();
+      }
+
+      res.status(existingReview.length ? 200 : 201).json({
+        data: {
+          id: review.id,
+          event_id: review.eventId,
+          rating: review.rating,
+          body: review.body,
+          role: review.role,
+          created_at: review.createdAt,
+        },
+        message: existingReview.length ? 'Review updated successfully' : 'Review created successfully'
+      });
+
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json(formatZodErrors(error));
+      }
+      console.error('Create/update event review error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to create or update review'
+      });
+    }
+  })
+);
+
+// GET /events/:id/reviews - Get event reviews with aggregated data
+router.get('/:id/reviews',
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const eventId = req.params.id;
+
+      // Check if event exists
+      const eventExists = await db
+        .select()
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!eventExists.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Event not found'
+        });
+      }
+
+      // Get aggregated review statistics
+      const aggregateStats = await db
+        .select({
+          averageRating: avg(eventReviews.rating),
+          totalReviews: count(eventReviews.id),
+          rating1Count: sql<number>`SUM(CASE WHEN ${eventReviews.rating} = 1 THEN 1 ELSE 0 END)`,
+          rating2Count: sql<number>`SUM(CASE WHEN ${eventReviews.rating} = 2 THEN 1 ELSE 0 END)`,
+          rating3Count: sql<number>`SUM(CASE WHEN ${eventReviews.rating} = 3 THEN 1 ELSE 0 END)`,
+          rating4Count: sql<number>`SUM(CASE WHEN ${eventReviews.rating} = 4 THEN 1 ELSE 0 END)`,
+          rating5Count: sql<number>`SUM(CASE WHEN ${eventReviews.rating} = 5 THEN 1 ELSE 0 END)`,
+        })
+        .from(eventReviews)
+        .where(eq(eventReviews.eventId, eventId))
+        .groupBy(sql`1`);
+
+      // Get recent 10 reviews
+      const recentReviews = await db
+        .select({
+          id: eventReviews.id,
+          rating: eventReviews.rating,
+          body: eventReviews.body,
+          role: eventReviews.role,
+          createdAt: eventReviews.createdAt,
+          userName: users.name,
+        })
+        .from(eventReviews)
+        .innerJoin(users, eq(users.id, eventReviews.userId))
+        .where(eq(eventReviews.eventId, eventId))
+        .orderBy(desc(eventReviews.createdAt))
+        .limit(10);
+
+      const stats = aggregateStats[0] || {
+        averageRating: null,
+        totalReviews: 0,
+        rating1Count: 0,
+        rating2Count: 0,
+        rating3Count: 0,
+        rating4Count: 0,
+        rating5Count: 0,
+      };
+
+      res.status(200).json({
+        data: {
+          average: stats.averageRating ? parseFloat(stats.averageRating.toString()) : null,
+          distribution: {
+            1: parseInt(stats.rating1Count.toString()),
+            2: parseInt(stats.rating2Count.toString()),
+            3: parseInt(stats.rating3Count.toString()),
+            4: parseInt(stats.rating4Count.toString()),
+            5: parseInt(stats.rating5Count.toString()),
+          },
+          verified_count: parseInt(stats.totalReviews.toString()),
+          recent_reviews: recentReviews.map(review => ({
+            id: review.id,
+            rating: review.rating,
+            body: review.body,
+            role: review.role,
+            created_at: review.createdAt,
+            author: {
+              name: review.userName,
+              verified: true, // All reviewers are verified by design
+            }
+          }))
+        },
+        message: 'Event reviews retrieved successfully'
+      });
+
+    } catch (error) {
+      console.error('Get event reviews error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to retrieve event reviews'
+      });
+    }
+  })
+);
+
+// PUT /events/:id/reviews/me - Edit your own review (verified users only)
+router.put('/:id/reviews/me',
+  verifyFirebaseToken,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const updates = updateReviewSchema.parse(req.body);
+      const userFirebaseUid = req.user!.firebaseUid || req.user!.userId;
+
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({
+          error: 'Bad request',
+          message: 'At least one field (rating or body) must be provided'
+        });
+      }
+
+      // Get user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userFirebaseUid))
+        .limit(1);
+
+      if (!user) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not found'
+        });
+      }
+
+      // Check if user is verified for this event
+      const { isVerified } = await isUserVerifiedForEvent(eventId, user.id);
+      
+      if (!isVerified) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'Only verified participants, judges, and organizers can review events'
+        });
+      }
+
+      // Find existing review
+      const existingReview = await db
+        .select()
+        .from(eventReviews)
+        .where(
+          and(
+            eq(eventReviews.eventId, eventId),
+            eq(eventReviews.userId, user.id)
+          )
+        )
+        .limit(1);
+
+      if (!existingReview.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'No review found to update'
+        });
+      }
+
+      // Update the review
+      const [updatedReview] = await db
+        .update(eventReviews)
+        .set(updates)
+        .where(
+          and(
+            eq(eventReviews.eventId, eventId),
+            eq(eventReviews.userId, user.id)
+          )
+        )
+        .returning();
+
+      res.status(200).json({
+        data: {
+          id: updatedReview.id,
+          event_id: updatedReview.eventId,
+          rating: updatedReview.rating,
+          body: updatedReview.body,
+          role: updatedReview.role,
+          created_at: updatedReview.createdAt,
+        },
+        message: 'Review updated successfully'
+      });
+
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json(formatZodErrors(error));
+      }
+      console.error('Update event review error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to update review'
+      });
+    }
+  })
+);
+
+// DELETE /events/:id/reviews/:reviewId - Delete review (organizer-only moderation)
+router.delete('/:id/reviews/:reviewId',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id: eventId, reviewId } = req.params;
+      const userFirebaseUid = req.user!.firebaseUid || req.user!.userId;
+
+      // Get user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userFirebaseUid))
+        .limit(1);
+
+      if (!user) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not found'
+        });
+      }
+
+      // Check if user is the organizer of this event
+      const event = await db
+        .select({ organizerId: events.organizerId })
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!event.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Event not found'
+        });
+      }
+
+      if (event[0].organizerId !== user.id) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'Only the event organizer can delete reviews'
+        });
+      }
+
+      // Check if review exists and belongs to this event
+      const review = await db
+        .select()
+        .from(eventReviews)
+        .where(
+          and(
+            eq(eventReviews.id, reviewId),
+            eq(eventReviews.eventId, eventId)
+          )
+        )
+        .limit(1);
+
+      if (!review.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Review not found'
+        });
+      }
+
+      // Delete the review
+      await db
+        .delete(eventReviews)
+        .where(eq(eventReviews.id, reviewId));
+
+      res.status(200).json({
+        message: 'Review deleted successfully'
+      });
+
+    } catch (error) {
+      console.error('Delete event review error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to delete review'
+      });
+    }
+  })
+);
 
 export default router;

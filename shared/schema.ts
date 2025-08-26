@@ -161,6 +161,19 @@ export const hackathonRegistrations = pgTable("hackathon_registrations", {
   uniqueUserHackathon: unique().on(table.userId, table.hackathonId),
 }));
 
+// Event reviews for credibility (verified users only)
+export const eventReviews = pgTable("event_reviews", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id").notNull().references(() => events.id),
+  userId: uuid("user_id").notNull().references(() => users.id),
+  role: varchar("role", { length: 20 }).notNull(), // 'participant', 'judge', 'organizer'
+  rating: integer("rating").notNull(), // 1-5
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueUserEvent: unique().on(table.eventId, table.userId),
+}));
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   teamsCreated: many(teams),
@@ -168,6 +181,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   eventsOrganized: many(events),
   participantProfile: one(participantProfiles),
   hackathonRegistrations: many(hackathonRegistrations),
+  eventReviews: many(eventReviews),
 }));
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -183,6 +197,7 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
   judgeAssignments: many(judgeAssignments),
   evaluationCriteria: many(evaluationCriteria),
   rubrics: many(rubrics),
+  eventReviews: many(eventReviews),
 }));
 
 export const teamsRelations = relations(teams, ({ one, many }) => ({
@@ -293,6 +308,17 @@ export const hackathonRegistrationsRelations = relations(hackathonRegistrations,
   }),
 }));
 
+export const eventReviewsRelations = relations(eventReviews, ({ one }) => ({
+  event: one(events, {
+    fields: [eventReviews.eventId],
+    references: [events.id],
+  }),
+  user: one(users, {
+    fields: [eventReviews.userId],
+    references: [users.id],
+  }),
+}));
+
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users);
 export const insertEventSchema = createInsertSchema(events);
@@ -306,6 +332,7 @@ export const insertEvaluationCriteriaSchema = createInsertSchema(evaluationCrite
 export const insertScoreSchema = createInsertSchema(scores);
 export const insertParticipantProfileSchema = createInsertSchema(participantProfiles);
 export const insertHackathonRegistrationSchema = createInsertSchema(hackathonRegistrations);
+export const insertEventReviewSchema = createInsertSchema(eventReviews);
 
 // Type exports
 export type User = typeof users.$inferSelect;
@@ -332,3 +359,5 @@ export type ParticipantProfile = typeof participantProfiles.$inferSelect;
 export type InsertParticipantProfile = typeof participantProfiles.$inferInsert;
 export type HackathonRegistration = typeof hackathonRegistrations.$inferSelect;
 export type InsertHackathonRegistration = typeof hackathonRegistrations.$inferInsert;
+export type EventReview = typeof eventReviews.$inferSelect;
+export type InsertEventReview = typeof eventReviews.$inferInsert;
