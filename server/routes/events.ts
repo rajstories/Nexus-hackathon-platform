@@ -29,11 +29,17 @@ const router = Router();
 const createReviewSchema = z.object({
   rating: z.number().int().min(1, 'Rating must be at least 1').max(5, 'Rating must be at most 5'),
   body: z.string().min(10, 'Review body must be at least 10 characters').max(2000, 'Review body must be at most 2000 characters'),
+  poap_code: z.string().optional(),
 });
 
 const updateReviewSchema = z.object({
   rating: z.number().int().min(1, 'Rating must be at least 1').max(5, 'Rating must be at most 5').optional(),
   body: z.string().min(10, 'Review body must be at least 10 characters').max(2000, 'Review body must be at most 2000 characters').optional(),
+});
+
+const updatePoapSettingsSchema = z.object({
+  require_poap: z.boolean(),
+  poap_event_code: z.string().min(1, 'POAP code cannot be empty').max(100, 'POAP code too long').optional(),
 });
 
 // Helper function to format validation errors
@@ -368,7 +374,7 @@ router.post('/:id/reviews',
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     try {
       const eventId = req.params.id;
-      const { rating, body } = createReviewSchema.parse(req.body);
+      const { rating, body, poap_code } = createReviewSchema.parse(req.body);
       const userFirebaseUid = req.user!.firebaseUid || req.user!.userId;
 
       // Get user
@@ -395,18 +401,42 @@ router.post('/:id/reviews',
         });
       }
 
-      // Check if event exists
-      const eventExists = await db
-        .select()
+      // Check if event exists and get POAP requirements
+      const eventQuery = await db
+        .select({
+          id: events.id,
+          requirePoap: events.requirePoap,
+          poapEventCode: events.poapEventCode,
+        })
         .from(events)
         .where(eq(events.id, eventId))
         .limit(1);
 
-      if (!eventExists.length) {
+      if (!eventQuery.length) {
         return res.status(404).json({
           error: 'Not found',
           message: 'Event not found'
         });
+      }
+
+      const event = eventQuery[0];
+
+      // Check POAP requirement
+      if (event.requirePoap) {
+        if (!poap_code) {
+          return res.status(400).json({
+            error: 'POAP Required',
+            message: 'This event requires a valid POAP code to submit a review'
+          });
+        }
+
+        // Validate POAP code (simple string match for demo)
+        if (poap_code !== event.poapEventCode) {
+          return res.status(400).json({
+            error: 'Invalid POAP',
+            message: 'The provided POAP code is invalid for this event'
+          });
+        }
       }
 
       // Check if review already exists (for upsert)
@@ -882,6 +912,142 @@ router.delete('/:id/reviews/:reviewId',
       res.status(500).json({
         error: 'Internal server error',
         message: 'Failed to delete review'
+      });
+    }
+  })
+);
+
+// PUT /events/:id/poap-settings - Update POAP settings for an event (organizer only)
+router.put('/:id/poap-settings',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const { require_poap, poap_event_code } = updatePoapSettingsSchema.parse(req.body);
+      const userFirebaseUid = req.user!.firebaseUid || req.user!.userId;
+
+      // Get user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userFirebaseUid))
+        .limit(1);
+
+      if (!user) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not found'
+        });
+      }
+
+      // Check if user is the organizer of this event
+      const event = await db
+        .select({ organizerId: events.organizerId })
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!event.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Event not found'
+        });
+      }
+
+      if (event[0].organizerId !== user.id) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'Only the event organizer can update POAP settings'
+        });
+      }
+
+      // Validate that if require_poap is true, poap_event_code must be provided
+      if (require_poap && !poap_event_code) {
+        return res.status(400).json({
+          error: 'Invalid request',
+          message: 'POAP event code is required when enabling POAP requirement'
+        });
+      }
+
+      // Update POAP settings
+      const [updatedEvent] = await db
+        .update(events)
+        .set({
+          requirePoap: require_poap,
+          poapEventCode: require_poap ? poap_event_code : null,
+        })
+        .where(eq(events.id, eventId))
+        .returning({
+          id: events.id,
+          requirePoap: events.requirePoap,
+          poapEventCode: events.poapEventCode,
+        });
+
+      res.status(200).json({
+        data: {
+          event_id: updatedEvent.id,
+          require_poap: updatedEvent.requirePoap,
+          poap_event_code: updatedEvent.poapEventCode,
+        },
+        message: 'POAP settings updated successfully'
+      });
+
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json(formatZodErrors(error));
+      }
+      console.error('Update POAP settings error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to update POAP settings'
+      });
+    }
+  })
+);
+
+// GET /events/:id/poap-info - Get POAP information for an event
+router.get('/:id/poap-info',
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const eventId = req.params.id;
+
+      // Get event POAP settings
+      const eventQuery = await db
+        .select({
+          id: events.id,
+          title: events.title,
+          requirePoap: events.requirePoap,
+          // Don't expose the actual POAP code in public endpoints
+        })
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!eventQuery.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Event not found'
+        });
+      }
+
+      const event = eventQuery[0];
+
+      res.status(200).json({
+        data: {
+          event_id: event.id,
+          event_title: event.title,
+          require_poap: event.requirePoap,
+          poap_required: event.requirePoap, // alias for clarity
+        },
+        message: 'POAP information retrieved successfully'
+      });
+
+    } catch (error) {
+      console.error('Get POAP info error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to retrieve POAP information'
       });
     }
   })

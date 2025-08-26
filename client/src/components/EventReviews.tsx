@@ -50,8 +50,11 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
   const [submitting, setSubmitting] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
-  const [reviewForm, setReviewForm] = useState({ rating: 5, body: '' });
+  const [reviewForm, setReviewForm] = useState({ rating: 5, body: '', poapCode: '' });
   const [userVerification, setUserVerification] = useState({ isVerified: false, loading: true });
+  const [poapInfo, setPoapInfo] = useState<{ requirePoap: boolean; loading: boolean }>({ requirePoap: false, loading: true });
+  const [showPoapModal, setShowPoapModal] = useState(false);
+  const [poapClaimed, setPoapClaimed] = useState(false);
   const { toast } = useToast();
 
   // Fetch reviews
@@ -97,6 +100,22 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
     }
   };
 
+  // Fetch POAP information for the event
+  const fetchPoapInfo = async () => {
+    try {
+      const response = await fetch(`/api/events/${eventId}/poap-info`);
+      if (response.ok) {
+        const data = await response.json();
+        setPoapInfo({ requirePoap: data.data.require_poap, loading: false });
+      } else {
+        setPoapInfo({ requirePoap: false, loading: false });
+      }
+    } catch (error) {
+      console.error('Error fetching POAP info:', error);
+      setPoapInfo({ requirePoap: false, loading: false });
+    }
+  };
+
   // Submit review
   const submitReview = async () => {
     if (!userRole || !authToken) {
@@ -125,7 +144,11 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify(reviewForm),
+        body: JSON.stringify({
+          rating: reviewForm.rating,
+          body: reviewForm.body,
+          ...(poapInfo.requirePoap && reviewForm.poapCode ? { poap_code: reviewForm.poapCode } : {})
+        }),
       });
 
       if (!response.ok) {
@@ -139,7 +162,7 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
       });
 
       setShowReviewForm(false);
-      setReviewForm({ rating: 5, body: '' });
+      setReviewForm({ rating: 5, body: '', poapCode: '' });
       fetchReviews();
     } catch (error: any) {
       toast({
@@ -178,7 +201,7 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
       });
 
       setEditingReview(null);
-      setReviewForm({ rating: 5, body: '' });
+      setReviewForm({ rating: 5, body: '', poapCode: '' });
       fetchReviews();
     } catch (error: any) {
       toast({
@@ -273,6 +296,7 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
   useEffect(() => {
     fetchReviews();
     checkUserVerification();
+    fetchPoapInfo();
   }, [eventId, authToken, userRole, isUserVerified]);
 
   if (loading) {
@@ -374,17 +398,29 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
             {/* Review Form Button */}
             <TooltipProvider>
               {userVerification.isVerified ? (
-                <Dialog open={showReviewForm} onOpenChange={setShowReviewForm}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" data-testid="button-write-review">
-                      <Edit className="h-4 w-4 mr-2" />
-                      Write Review
+                <>
+                  {poapInfo.requirePoap && !poapClaimed ? (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setShowPoapModal(true)}
+                      data-testid="button-claim-poap"
+                    >
+                      <Award className="h-4 w-4 mr-2" />
+                      Claim POAP First
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Write a Review</DialogTitle>
-                    </DialogHeader>
+                  ) : (
+                    <Dialog open={showReviewForm} onOpenChange={setShowReviewForm}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" data-testid="button-write-review">
+                          <Edit className="h-4 w-4 mr-2" />
+                          Write Review
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Write a Review</DialogTitle>
+                        </DialogHeader>
                     <div className="space-y-4">
                       <div>
                         <label className="text-sm font-medium mb-2 block">Rating</label>
@@ -405,10 +441,28 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
                           {reviewForm.body.length}/2000 characters (minimum 10)
                         </p>
                       </div>
+                      
+                      {/* POAP Code Input (when POAP is required) */}
+                      {poapInfo.requirePoap && (
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">POAP Code</label>
+                          <input
+                            type="text"
+                            value={reviewForm.poapCode}
+                            onChange={(e) => setReviewForm({ ...reviewForm, poapCode: e.target.value })}
+                            placeholder="Enter your POAP code for this event"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                            data-testid="input-poap-code"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            POAP verification is required for this event
+                          </p>
+                        </div>
+                      )}
                       <div className="flex gap-2">
                         <Button
                           onClick={submitReview}
-                          disabled={submitting || reviewForm.body.length < 10}
+                          disabled={submitting || reviewForm.body.length < 10 || (poapInfo.requirePoap && !reviewForm.poapCode)}
                           data-testid="button-submit-review"
                         >
                           {submitting ? 'Submitting...' : 'Submit Review'}
@@ -420,10 +474,12 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
                         >
                           Cancel
                         </Button>
+                        </div>
                       </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                    </DialogContent>
+                    </Dialog>
+                  )}
+                </>
               ) : (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -526,6 +582,61 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
           )}
         </CardContent>
       </Card>
+
+      {/* POAP Claiming Modal */}
+      <Dialog open={showPoapModal} onOpenChange={setShowPoapModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-yellow-500" />
+              Claim Your POAP
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-center py-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <Award className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Proof of Attendance Required</h3>
+              <p className="text-muted-foreground mb-4">
+                This event requires a POAP (Proof of Attendance Protocol) to verify your participation before you can submit a review.
+              </p>
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800 mb-4">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <strong>Demo Code:</strong> HACKATHON2024
+                  <br />
+                  <span className="text-xs opacity-75">In production, this would be your actual POAP code</span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  setPoapClaimed(true);
+                  setShowPoapModal(false);
+                  setShowReviewForm(true);
+                  toast({
+                    title: 'POAP Claimed!',
+                    description: 'You can now submit your review for this event.',
+                  });
+                }}
+                className="flex-1"
+                data-testid="button-confirm-poap-claim"
+              >
+                I have my POAP code
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowPoapModal(false)}
+                data-testid="button-cancel-poap-claim"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -25,6 +25,8 @@ export const events = pgTable("events", {
   organizerId: uuid("organizer_id").notNull().references(() => users.id),
   rubricId: uuid("rubric_id").references(() => rubrics.id),
   feedbackReleaseAt: timestamp("feedback_release_at"),
+  requirePoap: boolean("require_poap").default(false).notNull(),
+  poapEventCode: varchar("poap_event_code", { length: 100 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
