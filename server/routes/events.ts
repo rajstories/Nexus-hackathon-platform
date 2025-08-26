@@ -22,6 +22,7 @@ import {
 import { ZodError } from 'zod';
 import { z } from 'zod';
 import { ReviewFlaggingService } from '../services/ReviewFlaggingService';
+import { socketService } from '../lib/socketService';
 
 const router = Router();
 
@@ -490,6 +491,24 @@ router.post('/:id/reviews',
         // Don't fail the review submission if flagging fails
       }
 
+      // Emit real-time event to all clients in the event room
+      socketService.emitToEvent(eventId, 'review:new', {
+        review: {
+          id: review.id,
+          event_id: review.eventId,
+          rating: review.rating,
+          body: review.body,
+          role: review.role,
+          created_at: review.createdAt,
+          author: {
+            name: user.name,
+            verified: true // All users creating reviews are verified
+          }
+        },
+        isUpdate: existingReview.length > 0,
+        timestamp: new Date().toISOString()
+      });
+
       res.status(existingReview.length ? 200 : 201).json({
         data: {
           id: review.id,
@@ -898,10 +917,20 @@ router.delete('/:id/reviews/:reviewId',
         });
       }
 
+      // Store review data before deletion for the Socket.IO event
+      const deletedReview = review[0];
+
       // Delete the review
       await db
         .delete(eventReviews)
         .where(eq(eventReviews.id, reviewId));
+
+      // Emit real-time event to all clients in the event room
+      socketService.emitToEvent(eventId, 'review:deleted', {
+        reviewId: deletedReview.id,
+        rating: deletedReview.rating,
+        timestamp: new Date().toISOString()
+      });
 
       res.status(200).json({
         message: 'Review deleted successfully'

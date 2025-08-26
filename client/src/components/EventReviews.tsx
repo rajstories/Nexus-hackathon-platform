@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { io, Socket } from 'socket.io-client';
 
 interface Review {
   id: string;
@@ -56,6 +57,7 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
   const [showPoapModal, setShowPoapModal] = useState(false);
   const [poapClaimed, setPoapClaimed] = useState(false);
   const { toast } = useToast();
+  const socketRef = useRef<Socket | null>(null);
 
   // Fetch reviews
   const fetchReviews = async () => {
@@ -293,11 +295,127 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
     }
   };
 
+  // Initialize Socket.IO connection for real-time updates
+  useEffect(() => {
+    if (!authToken) return;
+
+    // Initialize Socket.IO connection
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const socketUrl = `${protocol}//${window.location.host}`;
+    
+    const socket = io(socketUrl, {
+      auth: {
+        token: authToken
+      },
+      transports: ['websocket', 'polling']
+    });
+
+    socketRef.current = socket;
+
+    // Join the event room for real-time updates
+    socket.emit('join-event', eventId);
+
+    // Listen for real-time review updates
+    socket.on('review:new', (data: { review: Review; isUpdate: boolean; timestamp: string }) => {
+      console.log('Received real-time review update:', data);
+      
+      if (data.isUpdate) {
+        // Update existing review
+        setReviews(prev => {
+          if (!prev) return prev;
+          
+          const updatedReviews = prev.reviews.map(review => 
+            review.id === data.review.id ? data.review : review
+          );
+          
+          // Recalculate stats
+          const newStats = calculateReviewStats(updatedReviews);
+          
+          return {
+            ...prev,
+            reviews: updatedReviews,
+            ...newStats
+          };
+        });
+      } else {
+        // Add new review
+        setReviews(prev => {
+          if (!prev) return prev;
+          
+          const updatedReviews = [data.review, ...prev.reviews];
+          const newStats = calculateReviewStats(updatedReviews);
+          
+          return {
+            ...prev,
+            reviews: updatedReviews,
+            ...newStats
+          };
+        });
+      }
+    });
+
+    socket.on('review:deleted', (data: { reviewId: string; rating: number; timestamp: string }) => {
+      console.log('Received real-time review deletion:', data);
+      
+      setReviews(prev => {
+        if (!prev) return prev;
+        
+        const updatedReviews = prev.reviews.filter(review => review.id !== data.reviewId);
+        const newStats = calculateReviewStats(updatedReviews);
+        
+        return {
+          ...prev,
+          reviews: updatedReviews,
+          ...newStats
+        };
+      });
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket connected for event:', eventId);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected for event:', eventId);
+    });
+
+    return () => {
+      socket.emit('leave-event', eventId);
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [eventId, authToken]);
+
   useEffect(() => {
     fetchReviews();
     checkUserVerification();
     fetchPoapInfo();
   }, [eventId, authToken, userRole, isUserVerified]);
+
+  // Helper function to calculate review statistics
+  const calculateReviewStats = (reviewsList: Review[]) => {
+    if (reviewsList.length === 0) {
+      return {
+        average: null,
+        distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+        verified_count: 0
+      };
+    }
+
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let totalRating = 0;
+
+    reviewsList.forEach(review => {
+      distribution[review.rating as keyof typeof distribution]++;
+      totalRating += review.rating;
+    });
+
+    return {
+      average: totalRating / reviewsList.length,
+      distribution,
+      verified_count: reviewsList.length // All reviews are from verified users
+    };
+  };
 
   if (loading) {
     return (
@@ -359,19 +477,38 @@ export function EventReviews({ eventId, userRole, authToken, className, isUserVe
                   const percentage = reviews.verified_count > 0 ? (count / reviews.verified_count) * 100 : 0;
                   
                   return (
-                    <div key={rating} className="flex items-center gap-3 text-sm">
+                    <motion.div 
+                      key={rating} 
+                      className="flex items-center gap-3 text-sm"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: (5 - rating) * 0.1 }}
+                    >
                       <div className="flex items-center gap-1 w-12">
                         <span>{rating}</span>
                         <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                       </div>
-                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                        <div
-                          className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full transition-all duration-500"
-                          style={{ width: `${percentage}%` }}
+                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                        <motion.div
+                          className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          transition={{ 
+                            duration: 0.8, 
+                            ease: "easeOut", 
+                            delay: (5 - rating) * 0.1 + 0.2 
+                          }}
                         />
                       </div>
-                      <span className="w-8 text-right font-medium">{count}</span>
-                    </div>
+                      <motion.span 
+                        className="w-8 text-right font-medium"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3, delay: (5 - rating) * 0.1 + 0.6 }}
+                      >
+                        {count}
+                      </motion.span>
+                    </motion.div>
                   );
                 })}
               </div>
