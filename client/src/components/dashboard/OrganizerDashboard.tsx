@@ -30,7 +30,8 @@ import {
   FileText,
   UserCheck,
   Shield,
-  CalendarIcon
+  CalendarIcon,
+  Book
 } from "lucide-react";
 import { SimilarityPanel } from '@/components/SimilarityPanel';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
@@ -43,6 +44,7 @@ export function OrganizerDashboard() {
   const [trackDialogOpen, setTrackDialogOpen] = useState(false);
   const [announcementDialogOpen, setAnnouncementDialogOpen] = useState(false);
   const [judgeDialogOpen, setJudgeDialogOpen] = useState(false);
+  const [policyDialogOpen, setPolicyDialogOpen] = useState(false);
 
   // Fetch events created by this organizer
   const { data: eventsData, isLoading: eventsLoading } = useQuery({
@@ -196,10 +198,83 @@ export function OrganizerDashboard() {
           <h1 className="text-3xl font-bold">Organizer Dashboard</h1>
           <p className="text-muted-foreground">Manage events, tracks, and participants</p>
         </div>
-        <Badge variant="secondary" className="text-sm">
-          <Settings className="w-4 h-4 mr-1" />
-          Organizer
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Dialog open={policyDialogOpen} onOpenChange={setPolicyDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" data-testid="button-policy">
+                <Book className="w-4 h-4 mr-2" />
+                Policy
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Judging & Feedback Policy</DialogTitle>
+                <DialogDescription>
+                  Transparency & guidelines for fair evaluation
+                </DialogDescription>
+              </DialogHeader>
+              <div className="prose prose-sm max-w-none dark:prose-invert">
+                <div className="space-y-6">
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Public Information</h3>
+                    <ul className="space-y-2 text-sm">
+                      <li><strong>Rubric</strong>: All evaluation criteria and scoring rubrics are publicly visible to participants before and during the event</li>
+                      <li><strong>Judging Process</strong>: Teams can see which judges are assigned to evaluate their submissions</li>
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Judge Requirements</h3>
+                    <ul className="space-y-2 text-sm">
+                      <li><strong>Constructive Feedback</strong>: Judges must provide at least one constructive comment per submission they evaluate</li>
+                      <li><strong>Quality Standards</strong>: Comments should be specific, actionable, and help teams understand their scores</li>
+                      <li><strong>Professional Conduct</strong>: All feedback must be respectful and focused on the work, not personal attributes</li>
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Feedback Privacy & Release</h3>
+                    <ul className="space-y-2 text-sm">
+                      <li><strong>Initial Privacy</strong>: All judge feedback and scores remain private to the team until the designated release time</li>
+                      <li><strong>Release Timeline</strong>: Feedback becomes visible to teams at the time specified by <code>feedback_release_at</code></li>
+                      <li><strong>Team-Only Access</strong>: Once released, feedback is visible only to the team members - it is never made public</li>
+                      <li><strong>No Public Scores</strong>: Individual scores and detailed feedback are never displayed publicly to maintain team privacy</li>
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Clarification Process</h3>
+                    <ul className="space-y-2 text-sm">
+                      <li><strong>48-Hour Window</strong>: Teams have 48 hours after feedback release to request clarifications</li>
+                      <li><strong>One Message Limit</strong>: Each team may send only one clarification message per submission</li>
+                      <li><strong>Direct Communication</strong>: Clarification requests go directly to the assigned judges</li>
+                      <li><strong>Response Timeline</strong>: Judges should respond to clarification requests within 24 hours when possible</li>
+                    </ul>
+                  </section>
+
+                  <section>
+                    <h3 className="text-lg font-semibold mb-3">Appeal Process</h3>
+                    <ul className="space-y-2 text-sm">
+                      <li><strong>Organizer Review</strong>: Teams may appeal scores through the event organizer if they believe there was an error in evaluation</li>
+                      <li><strong>Documentation Required</strong>: Appeals must include specific concerns about scoring discrepancies or policy violations</li>
+                      <li><strong>Final Decision</strong>: Organizer decisions on appeals are final</li>
+                    </ul>
+                  </section>
+
+                  <div className="mt-6 p-4 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground italic">
+                      This policy ensures fair, transparent, and constructive evaluation while protecting team privacy and maintaining the integrity of the judging process.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Badge variant="secondary" className="text-sm">
+            <Settings className="w-4 h-4 mr-1" />
+            Organizer
+          </Badge>
+        </div>
       </div>
 
       <Tabs defaultValue="event" className="space-y-6">
