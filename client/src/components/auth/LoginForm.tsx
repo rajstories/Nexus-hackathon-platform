@@ -21,6 +21,31 @@ interface LoginFormProps {
   onToggleMode: () => void;
 }
 
+// Function to convert Firebase error codes to user-friendly messages
+const getFirebaseErrorMessage = (errorCode: string): string => {
+  switch (errorCode) {
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+      return 'Incorrect password. Please try again.';
+    case 'auth/user-not-found':
+      return 'No account found with this email address.';
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.';
+    case 'auth/user-disabled':
+      return 'This account has been disabled. Please contact support.';
+    case 'auth/too-many-requests':
+      return 'Too many failed attempts. Please try again later.';
+    case 'auth/network-request-failed':
+      return 'Network error. Please check your connection and try again.';
+    case 'auth/weak-password':
+      return 'Password is too weak. Please choose a stronger password.';
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists.';
+    default:
+      return 'An error occurred while logging in. Please try again.';
+  }
+};
+
 export function LoginForm({ onToggleMode }: LoginFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -42,9 +67,11 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
         description: 'Successfully logged in to your account.',
       });
     } catch (error: any) {
+      console.log('Email sign-in error:', error.code, error.message);
+      const friendlyMessage = getFirebaseErrorMessage(error.code || '');
       toast({
         title: 'Login failed',
-        description: error.message || 'An error occurred while logging in.',
+        description: friendlyMessage,
         variant: 'destructive',
       });
     } finally {
