@@ -6,6 +6,7 @@ import { db } from '../db';
 import { users, teams, events, submissions, teamMembers } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { SubmissionMetadata } from '../db/models/SubmissionMetadata';
+import { FeedbackSummaryService } from '../services/feedbackSummary';
 import { z } from 'zod';
 
 const router = Router();
@@ -399,6 +400,125 @@ router.get('/team/:teamId',
       res.status(500).json({
         error: 'Internal server error',
         message: 'Failed to retrieve team submissions'
+      });
+    }
+  })
+);
+
+// GET /submissions/:id/reason - Get automated feedback summary for submission (participant-only, after feedback release)
+router.get('/:id/reason',
+  verifyFirebaseToken,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id: submissionId } = req.params;
+      const userId = req.user!.firebaseUid || req.user!.userId;
+
+      // Get the authenticated user
+      const user = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userId))
+        .limit(1);
+
+      if (!user.length) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not found'
+        });
+      }
+
+      // Get the submission and verify access
+      const submission = await db
+        .select({
+          id: submissions.id,
+          teamId: submissions.teamId,
+          eventId: submissions.eventId,
+          title: submissions.title,
+          decision: submissions.decision,
+          event: {
+            id: events.id,
+            title: events.title,
+            feedbackReleaseAt: events.feedbackReleaseAt,
+          }
+        })
+        .from(submissions)
+        .innerJoin(events, eq(events.id, submissions.eventId))
+        .where(eq(submissions.id, submissionId))
+        .limit(1);
+
+      if (!submission.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Submission not found'
+        });
+      }
+
+      const sub = submission[0];
+
+      // Check if feedback has been released
+      if (!sub.event.feedbackReleaseAt || new Date() < new Date(sub.event.feedbackReleaseAt)) {
+        return res.status(403).json({
+          error: 'Feedback not released',
+          message: 'Feedback for this event has not been released yet'
+        });
+      }
+
+      // Verify the user is a participant in this submission's team
+      const teamMember = await db
+        .select()
+        .from(teamMembers)
+        .where(
+          and(
+            eq(teamMembers.teamId, sub.teamId),
+            eq(teamMembers.userId, user[0].id)
+          )
+        )
+        .limit(1);
+
+      if (!teamMember.length) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'You are not authorized to view feedback for this submission'
+        });
+      }
+
+      // Only provide feedback summary for rejected submissions
+      if (sub.decision !== 'rejected') {
+        return res.status(400).json({
+          error: 'Feedback not available',
+          message: 'Automated feedback summary is only available for rejected submissions'
+        });
+      }
+
+      // Get feedback summary from service
+      const feedbackSummary = await FeedbackSummaryService.getFeedbackSummary(submissionId);
+
+      if (!feedbackSummary) {
+        return res.status(404).json({
+          error: 'Feedback not available',
+          message: 'Unable to generate feedback summary for this submission'
+        });
+      }
+
+      res.status(200).json({
+        data: {
+          submission_id: submissionId,
+          submission_title: sub.title,
+          event_title: sub.event.title,
+          feedback: {
+            summary: feedbackSummary.summary,
+            next_steps: feedbackSummary.next_steps
+          },
+          generated_at: new Date().toISOString()
+        },
+        message: 'Feedback summary retrieved successfully'
+      });
+
+    } catch (error) {
+      console.error('Get feedback summary error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to retrieve feedback summary'
       });
     }
   })
