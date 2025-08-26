@@ -3,10 +3,11 @@ import multer from 'multer';
 import { verifyFirebaseToken, type AuthenticatedRequest } from '../lib/firebase-admin';
 import { azureBlobStorage } from '../lib/azureBlobStorage';
 import { db } from '../db';
-import { users, teams, events, submissions, teamMembers } from '@shared/schema';
-import { eq, and } from 'drizzle-orm';
+import { users, teams, events, submissions, teamMembers, judgeAssignments } from '@shared/schema';
+import { eq, and, or } from 'drizzle-orm';
 import { SubmissionMetadata } from '../db/models/SubmissionMetadata';
 import { FeedbackSummaryService } from '../services/feedbackSummary';
+import { Clarification } from '../db/models/Clarification';
 import { z } from 'zod';
 
 const router = Router();
@@ -519,6 +520,313 @@ router.get('/:id/reason',
       res.status(500).json({
         error: 'Internal server error',
         message: 'Failed to retrieve feedback summary'
+      });
+    }
+  })
+);
+
+// POST /submissions/:id/clarify - Submit clarification request (participant-only, within 48h of feedback release)
+router.post('/:id/clarify',
+  verifyFirebaseToken,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id: submissionId } = req.params;
+      const { text } = req.body;
+      const userId = req.user!.firebaseUid || req.user!.userId;
+
+      // Validate input
+      if (!text || typeof text !== 'string' || text.trim().length === 0) {
+        return res.status(400).json({
+          error: 'Invalid input',
+          message: 'Clarification text is required'
+        });
+      }
+
+      if (text.length > 500) {
+        return res.status(400).json({
+          error: 'Text too long',
+          message: 'Clarification text must be 500 characters or less'
+        });
+      }
+
+      // Get the authenticated user
+      const user = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userId))
+        .limit(1);
+
+      if (!user.length) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not found'
+        });
+      }
+
+      // Get the submission and verify access
+      const submission = await db
+        .select({
+          id: submissions.id,
+          teamId: submissions.teamId,
+          eventId: submissions.eventId,
+          title: submissions.title,
+          decision: submissions.decision,
+          event: {
+            id: events.id,
+            title: events.title,
+            feedbackReleaseAt: events.feedbackReleaseAt,
+          }
+        })
+        .from(submissions)
+        .innerJoin(events, eq(events.id, submissions.eventId))
+        .where(eq(submissions.id, submissionId))
+        .limit(1);
+
+      if (!submission.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Submission not found'
+        });
+      }
+
+      const sub = submission[0];
+
+      // Check if feedback has been released
+      if (!sub.event.feedbackReleaseAt) {
+        return res.status(403).json({
+          error: 'Feedback not released',
+          message: 'Feedback for this event has not been released yet'
+        });
+      }
+
+      const feedbackReleaseDate = new Date(sub.event.feedbackReleaseAt);
+      const now = new Date();
+      
+      if (now < feedbackReleaseDate) {
+        return res.status(403).json({
+          error: 'Feedback not released',
+          message: 'Feedback for this event has not been released yet'
+        });
+      }
+
+      // Check if within 48h window
+      const fortyEightHoursAfterRelease = new Date(feedbackReleaseDate.getTime() + (48 * 60 * 60 * 1000));
+      if (now > fortyEightHoursAfterRelease) {
+        return res.status(403).json({
+          error: 'Window closed',
+          message: 'Clarification requests must be submitted within 48 hours of feedback release'
+        });
+      }
+
+      // Verify the user is a participant in this submission's team
+      const teamMember = await db
+        .select()
+        .from(teamMembers)
+        .where(
+          and(
+            eq(teamMembers.teamId, sub.teamId),
+            eq(teamMembers.userId, user[0].id)
+          )
+        )
+        .limit(1);
+
+      if (!teamMember.length) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'You are not authorized to submit clarifications for this submission'
+        });
+      }
+
+      // Check if user has already submitted a clarification for this submission
+      const existingClarification = await Clarification.findOne({
+        submissionId: submissionId,
+        userId: user[0].id
+      });
+
+      if (existingClarification) {
+        return res.status(409).json({
+          error: 'Already submitted',
+          message: 'You have already submitted a clarification for this submission'
+        });
+      }
+
+      // Create the clarification
+      const clarification = new Clarification({
+        submissionId: submissionId,
+        userId: user[0].id,
+        text: text.trim(),
+        status: 'open'
+      });
+
+      await clarification.save();
+
+      res.status(201).json({
+        data: {
+          id: clarification._id,
+          submission_id: submissionId,
+          submission_title: sub.title,
+          text: clarification.text,
+          status: clarification.status,
+          created_at: clarification.createdAt
+        },
+        message: 'Clarification submitted successfully'
+      });
+
+    } catch (error: any) {
+      console.error('Submit clarification error:', error);
+      
+      if (error.code === 11000) {
+        return res.status(409).json({
+          error: 'Already submitted',
+          message: 'You have already submitted a clarification for this submission'
+        });
+      }
+      
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to submit clarification'
+      });
+    }
+  })
+);
+
+// POST /submissions/:id/clarify/reply - Reply to clarification (judge or organizer only)
+router.post('/:id/clarify/reply',
+  verifyFirebaseToken,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id: submissionId } = req.params;
+      const { text, status } = req.body;
+      const userId = req.user!.firebaseUid || req.user!.userId;
+
+      // Validate input
+      if (!text || typeof text !== 'string' || text.trim().length === 0) {
+        return res.status(400).json({
+          error: 'Invalid input',
+          message: 'Reply text is required'
+        });
+      }
+
+      if (text.length > 1000) {
+        return res.status(400).json({
+          error: 'Text too long',
+          message: 'Reply text must be 1000 characters or less'
+        });
+      }
+
+      const validStatuses = ['answered', 'rejected'];
+      if (status && !validStatuses.includes(status)) {
+        return res.status(400).json({
+          error: 'Invalid status',
+          message: 'Status must be either "answered" or "rejected"'
+        });
+      }
+
+      // Get the authenticated user
+      const user = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userId))
+        .limit(1);
+
+      if (!user.length) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not found'
+        });
+      }
+
+      // Get the submission
+      const submission = await db
+        .select({
+          id: submissions.id,
+          eventId: submissions.eventId,
+          title: submissions.title,
+          event: {
+            organizerId: events.organizerId
+          }
+        })
+        .from(submissions)
+        .innerJoin(events, eq(events.id, submissions.eventId))
+        .where(eq(submissions.id, submissionId))
+        .limit(1);
+
+      if (!submission.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Submission not found'
+        });
+      }
+
+      const sub = submission[0];
+
+      // Check if user is authorized (organizer or judge)
+      const isOrganizer = sub.event.organizerId === user[0].id;
+      
+      let isJudge = false;
+      if (!isOrganizer) {
+        const judgeAssignment = await db
+          .select()
+          .from(judgeAssignments)
+          .where(
+            and(
+              eq(judgeAssignments.eventId, sub.eventId),
+              eq(judgeAssignments.judgeId, user[0].id)
+            )
+          )
+          .limit(1);
+        
+        isJudge = judgeAssignment.length > 0;
+      }
+
+      if (!isOrganizer && !isJudge) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'Only event organizers and judges can reply to clarifications'
+        });
+      }
+
+      // Find the open clarification for this submission
+      const clarification = await Clarification.findOne({
+        submissionId: submissionId,
+        status: 'open'
+      });
+
+      if (!clarification) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'No open clarification found for this submission'
+        });
+      }
+
+      // Update the clarification with reply
+      clarification.reply = {
+        text: text.trim(),
+        repliedBy: user[0].id,
+        repliedAt: new Date()
+      };
+      clarification.status = status || 'answered';
+
+      await clarification.save();
+
+      res.status(200).json({
+        data: {
+          id: clarification._id,
+          submission_id: submissionId,
+          submission_title: sub.title,
+          original_text: clarification.text,
+          reply: clarification.reply,
+          status: clarification.status,
+          replied_at: clarification.reply.repliedAt
+        },
+        message: 'Clarification reply submitted successfully'
+      });
+
+    } catch (error) {
+      console.error('Reply to clarification error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to reply to clarification'
       });
     }
   })

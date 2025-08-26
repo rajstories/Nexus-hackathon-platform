@@ -6,6 +6,7 @@ import {
   teams, events, rubrics, rubricCriteria 
 } from '@shared/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
+import { Clarification } from '../db/models/Clarification';
 import { z } from 'zod';
 
 const router = Router();
@@ -559,6 +560,155 @@ router.get('/events/:eventId/aggregates',
       res.status(500).json({
         error: 'Internal server error',
         message: 'Failed to retrieve scoring aggregates'
+      });
+    }
+  })
+);
+
+// GET /api/judging/events/:eventId/clarifications - Get clarifications for judge dashboard
+router.get('/events/:eventId/clarifications',
+  verifyFirebaseToken,
+  requireRole(['judge', 'organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const userFirebaseUid = req.user!.firebaseUid || req.user!.userId;
+      
+      // Get user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userFirebaseUid))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).json({
+          error: 'User not found',
+          message: 'Please complete registration first'
+        });
+      }
+
+      // Check if user is authorized (organizer or judge)
+      const event = await db
+        .select({ organizerId: events.organizerId })
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!event.length) {
+        return res.status(404).json({
+          error: 'Event not found',
+          message: 'The specified event does not exist'
+        });
+      }
+
+      const isOrganizer = event[0].organizerId === user.id;
+      
+      let isJudge = false;
+      if (!isOrganizer) {
+        const judgeAssignment = await db
+          .select()
+          .from(judgeAssignments)
+          .where(
+            and(
+              eq(judgeAssignments.eventId, eventId),
+              eq(judgeAssignments.judgeId, user.id)
+            )
+          )
+          .limit(1);
+        
+        isJudge = judgeAssignment.length > 0;
+      }
+
+      if (!isOrganizer && !isJudge) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'Only event organizers and judges can view clarifications'
+        });
+      }
+
+      // Get submissions for this event
+      const eventSubmissions = await db
+        .select({
+          id: submissions.id,
+          title: submissions.title,
+          teamName: teams.name,
+          submittedBy: users.name,
+        })
+        .from(submissions)
+        .innerJoin(teams, eq(teams.id, submissions.teamId))
+        .innerJoin(users, eq(users.id, submissions.submittedById))
+        .where(eq(submissions.eventId, eventId))
+        .orderBy(desc(submissions.createdAt));
+
+      const submissionIds = eventSubmissions.map(s => s.id);
+
+      // Get clarifications for all submissions in this event
+      const clarifications = await Clarification.find({
+        submissionId: { $in: submissionIds }
+      }).sort({ createdAt: -1 });
+
+      // Get user details for clarification authors and repliers
+      const allUserIds = [
+        ...clarifications.map(c => c.userId),
+        ...clarifications.filter(c => c.reply?.repliedBy).map(c => c.reply!.repliedBy)
+      ];
+
+      const clarificationUsers = await db
+        .select({ id: users.id, name: users.name, email: users.email })
+        .from(users)
+        .where(sql`${users.id} IN (${sql.raw(allUserIds.map(id => `'${id}'`).join(',') || "''")})`);
+
+      const userMap = new Map(clarificationUsers.map(u => [u.id, u]));
+      const submissionMap = new Map(eventSubmissions.map(s => [s.id, s]));
+
+      // Format clarifications with submission and user details
+      const formattedClarifications = clarifications.map(clarification => {
+        const submission = submissionMap.get(clarification.submissionId);
+        const author = userMap.get(clarification.userId);
+        const replier = clarification.reply?.repliedBy ? userMap.get(clarification.reply.repliedBy) : null;
+
+        return {
+          id: clarification._id,
+          submission: {
+            id: clarification.submissionId,
+            title: submission?.title || 'Unknown',
+            team_name: submission?.teamName || 'Unknown',
+          },
+          text: clarification.text,
+          status: clarification.status,
+          created_at: clarification.createdAt,
+          author: {
+            name: author?.name || 'Unknown',
+            email: author?.email || 'Unknown'
+          },
+          reply: clarification.reply ? {
+            text: clarification.reply.text,
+            replied_by: {
+              name: replier?.name || 'Unknown',
+              email: replier?.email || 'Unknown'
+            },
+            replied_at: clarification.reply.repliedAt
+          } : null
+        };
+      });
+
+      res.status(200).json({
+        data: {
+          clarifications: formattedClarifications,
+          total: formattedClarifications.length,
+          open: formattedClarifications.filter(c => c.status === 'open').length,
+          answered: formattedClarifications.filter(c => c.status === 'answered').length,
+          rejected: formattedClarifications.filter(c => c.status === 'rejected').length,
+        },
+        message: 'Clarifications retrieved successfully'
+      });
+
+    } catch (error) {
+      console.error('Get clarifications error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to retrieve clarifications'
       });
     }
   })
