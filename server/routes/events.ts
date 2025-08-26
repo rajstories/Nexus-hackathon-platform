@@ -21,6 +21,7 @@ import {
 } from '../types/event';
 import { ZodError } from 'zod';
 import { z } from 'zod';
+import { ReviewFlaggingService } from '../services/ReviewFlaggingService';
 
 const router = Router();
 
@@ -451,6 +452,14 @@ router.post('/:id/reviews',
           .returning();
       }
 
+      // Trigger flagging analysis after review creation/update
+      try {
+        await ReviewFlaggingService.runFlaggingAnalysis(eventId);
+      } catch (flagError) {
+        console.error('Flagging analysis failed:', flagError);
+        // Don't fail the review submission if flagging fails
+      }
+
       res.status(existingReview.length ? 200 : 201).json({
         data: {
           id: review.id,
@@ -471,6 +480,133 @@ router.post('/:id/reviews',
       res.status(500).json({
         error: 'Internal server error',
         message: 'Failed to create or update review'
+      });
+    }
+  })
+);
+
+// GET /events/:id/reviews/flags - Get flagged reviews for moderation (organizer-only)
+router.get('/:id/reviews/flags',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const userFirebaseUid = req.user!.firebaseUid || req.user!.userId;
+
+      // Get user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userFirebaseUid))
+        .limit(1);
+
+      if (!user) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not found'
+        });
+      }
+
+      // Check if user is the organizer of this event
+      const event = await db
+        .select({ organizerId: events.organizerId })
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!event.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Event not found'
+        });
+      }
+
+      if (event[0].organizerId !== user.id) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'Only the event organizer can view flagged reviews'
+        });
+      }
+
+      // Get flagged reviews with details
+      const flaggedReviews = await ReviewFlaggingService.getFlaggedReviewsWithDetails(eventId);
+
+      res.status(200).json({
+        data: {
+          event_id: eventId,
+          flagged_count: flaggedReviews.length,
+          flags: flaggedReviews,
+        },
+        message: 'Flagged reviews retrieved successfully'
+      });
+
+    } catch (error) {
+      console.error('Get flagged reviews error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to retrieve flagged reviews'
+      });
+    }
+  })
+);
+
+// POST /events/:id/reviews/analyze - Manually trigger flagging analysis (organizer-only)
+router.post('/:id/reviews/analyze',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const userFirebaseUid = req.user!.firebaseUid || req.user!.userId;
+
+      // Get user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.firebaseUid, userFirebaseUid))
+        .limit(1);
+
+      if (!user) {
+        return res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not found'
+        });
+      }
+
+      // Check if user is the organizer of this event
+      const event = await db
+        .select({ organizerId: events.organizerId })
+        .from(events)
+        .where(eq(events.id, eventId))
+        .limit(1);
+
+      if (!event.length) {
+        return res.status(404).json({
+          error: 'Not found',
+          message: 'Event not found'
+        });
+      }
+
+      if (event[0].organizerId !== user.id) {
+        return res.status(403).json({
+          error: 'Unauthorized',
+          message: 'Only the event organizer can trigger review analysis'
+        });
+      }
+
+      // Run flagging analysis
+      await ReviewFlaggingService.runFlaggingAnalysis(eventId);
+
+      res.status(200).json({
+        message: 'Review flagging analysis completed successfully'
+      });
+
+    } catch (error) {
+      console.error('Manual flagging analysis error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to run flagging analysis'
       });
     }
   })

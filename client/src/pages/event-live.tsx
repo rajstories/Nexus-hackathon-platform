@@ -7,6 +7,7 @@ import { AnnouncementPanel } from '@/components/AnnouncementPanel';
 import { ChatPanel } from '@/components/ChatPanel';
 import { LiveLeaderboard } from '@/components/LiveLeaderboard';
 import { EventReviews } from '@/components/EventReviews';
+import { FlaggedReviewsModal } from '@/components/FlaggedReviewsModal';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'wouter';
 import { ArrowLeft, Wifi, WifiOff, Users, Calendar, Clock } from 'lucide-react';
@@ -164,11 +165,19 @@ export function EventLivePage() {
           </TabsContent>
           
           <TabsContent value="reviews" className="space-y-4">
+            <div className="flex justify-end mb-4">
+              {userRole === 'organizer' && (
+                <FlaggedReviewsModal
+                  eventId={mockEvent.id}
+                  authToken={authToken}
+                />
+              )}
+            </div>
             <EventReviews
               eventId={mockEvent.id}
               userRole={userRole}
               authToken={authToken}
-              className="h-[calc(100vh-250px)] overflow-y-auto"
+              className="h-[calc(100vh-300px)] overflow-y-auto"
             />
           </TabsContent>
         </Tabs>
