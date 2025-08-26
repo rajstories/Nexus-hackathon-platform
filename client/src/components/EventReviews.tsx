@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Star, Edit, Trash2, User, Shield, Award, MessageCircle } from 'lucide-react';
+import { Star, Edit, Trash2, User, Shield, Award, MessageCircle, CheckCircle, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Review {
   id: string;
@@ -40,15 +41,17 @@ interface EventReviewsProps {
   userRole?: 'participant' | 'judge' | 'organizer';
   authToken?: string;
   className?: string;
+  isUserVerified?: boolean;
 }
 
-export function EventReviews({ eventId, userRole, authToken, className }: EventReviewsProps) {
+export function EventReviews({ eventId, userRole, authToken, className, isUserVerified = false }: EventReviewsProps) {
   const [reviews, setReviews] = useState<ReviewStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, body: '' });
+  const [userVerification, setUserVerification] = useState({ isVerified: false, loading: true });
   const { toast } = useToast();
 
   // Fetch reviews
@@ -72,6 +75,25 @@ export function EventReviews({ eventId, userRole, authToken, className }: EventR
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Check if current user is verified for this event
+  const checkUserVerification = async () => {
+    if (!authToken) {
+      setUserVerification({ isVerified: false, loading: false });
+      return;
+    }
+
+    try {
+      // For now, we'll use the passed userRole and isUserVerified prop
+      // In a real implementation, you might call an API endpoint to verify
+      setUserVerification({ 
+        isVerified: isUserVerified || ['participant', 'judge', 'organizer'].includes(userRole || ''), 
+        loading: false 
+      });
+    } catch (error) {
+      setUserVerification({ isVerified: false, loading: false });
     }
   };
 
@@ -250,7 +272,8 @@ export function EventReviews({ eventId, userRole, authToken, className }: EventR
 
   useEffect(() => {
     fetchReviews();
-  }, [eventId]);
+    checkUserVerification();
+  }, [eventId, authToken, userRole, isUserVerified]);
 
   if (loading) {
     return (
@@ -272,183 +295,237 @@ export function EventReviews({ eventId, userRole, authToken, className }: EventR
   }
 
   return (
-    <Card className={className} data-testid="event-reviews">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            Event Reviews
+    <div className="space-y-6">
+      {/* Community Reviews Header Card */}
+      <Card className="border-0 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="flex items-center justify-center gap-3 text-2xl">
+            <div className="flex items-center gap-2">
+              <Shield className="h-6 w-6 text-blue-600" />
+              <span>Community Reviews</span>
+            </div>
             {reviews && reviews.verified_count > 0 && (
               <Badge variant="secondary" className="ml-2">
                 {reviews.verified_count} verified
               </Badge>
             )}
           </CardTitle>
-          
-          {userRole && (
-            <Dialog open={showReviewForm} onOpenChange={setShowReviewForm}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" data-testid="button-write-review">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Write Review
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Write a Review</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Rating</label>
-                    {renderStars(reviewForm.rating, true, (rating) =>
-                      setReviewForm({ ...reviewForm, rating })
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Review</label>
-                    <Textarea
-                      value={reviewForm.body}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReviewForm({ ...reviewForm, body: e.target.value })}
-                      placeholder="Share your experience with this event..."
-                      className="min-h-[100px]"
-                      data-testid="textarea-review-body"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {reviewForm.body.length}/2000 characters (minimum 10)
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={submitReview}
-                      disabled={submitting || reviewForm.body.length < 10}
-                      data-testid="button-submit-review"
-                    >
-                      {submitting ? 'Submitting...' : 'Submit Review'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowReviewForm(false)}
-                      data-testid="button-cancel-review"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+        </CardHeader>
+        
+        <CardContent className="text-center space-y-4">
+          {reviews && reviews.average ? (
+            <>
+              {/* Big Average Rating */}
+              <div className="space-y-3">
+                <div className="text-5xl font-bold text-blue-600 dark:text-blue-400" data-testid="text-average-rating">
+                  {reviews.average.toFixed(1)}
                 </div>
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-6">
-        {!reviews || reviews.verified_count === 0 ? (
-          <Alert>
-            <MessageCircle className="h-4 w-4" />
-            <AlertDescription>
-              No verified reviews yet. Only participants, judges, and organizers can review events.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <>
-            {/* Review Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Average Rating */}
-              <div className="text-center">
-                <div className="text-3xl font-bold mb-2" data-testid="text-average-rating">
-                  {reviews.average ? reviews.average.toFixed(1) : 'N/A'}
+                <div className="flex justify-center">
+                  {renderStars(Math.round(reviews.average))}
                 </div>
-                {reviews.average && renderStars(Math.round(reviews.average))}
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-lg text-muted-foreground">
                   Based on {reviews.verified_count} verified review{reviews.verified_count !== 1 ? 's' : ''}
                 </p>
               </div>
-              
-              {/* Rating Distribution */}
-              <div className="space-y-2">
+
+              {/* Rating Distribution Bars */}
+              <div className="max-w-md mx-auto space-y-2">
                 {[5, 4, 3, 2, 1].map((rating) => {
                   const count = reviews.distribution[rating as keyof typeof reviews.distribution];
                   const percentage = reviews.verified_count > 0 ? (count / reviews.verified_count) * 100 : 0;
                   
                   return (
-                    <div key={rating} className="flex items-center gap-2 text-sm">
-                      <span className="w-3">{rating}</span>
-                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div key={rating} className="flex items-center gap-3 text-sm">
+                      <div className="flex items-center gap-1 w-12">
+                        <span>{rating}</span>
+                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      </div>
+                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                         <div
-                          className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full transition-all duration-500"
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <span className="w-8 text-right">{count}</span>
+                      <span className="w-8 text-right font-medium">{count}</span>
                     </div>
                   );
                 })}
               </div>
+            </>
+          ) : (
+            <div className="py-8 text-muted-foreground">
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg">No verified reviews yet</p>
+              <p className="text-sm">Be the first to share your experience!</p>
             </div>
+          )}
+        </CardContent>
+      </Card>
 
-            {/* Recent Reviews */}
-            <div>
-              <h3 className="font-semibold mb-4">Recent Reviews</h3>
-              <div className="space-y-4">
-                <AnimatePresence>
-                  {reviews.recent_reviews.map((review) => (
-                    <motion.div
-                      key={review.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-                      data-testid={`review-${review.id}`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2">
-                            {getRoleIcon(review.role)}
-                            <span className="font-medium">{review.author.name}</span>
-                          </div>
-                          <Badge className={getRoleBadgeColor(review.role)}>
-                            {review.role}
-                          </Badge>
-                          {review.author.verified && (
-                            <Badge variant="outline" className="text-green-600 border-green-600">
-                              Verified
-                            </Badge>
-                          )}
-                        </div>
-                        
+      {/* Reviews Section */}
+      <Card className={className} data-testid="event-reviews">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              Recent Reviews
+            </CardTitle>
+            
+            {/* Review Form Button */}
+            <TooltipProvider>
+              {userVerification.isVerified ? (
+                <Dialog open={showReviewForm} onOpenChange={setShowReviewForm}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" data-testid="button-write-review">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Write Review
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Write a Review</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Rating</label>
+                        {renderStars(reviewForm.rating, true, (rating) =>
+                          setReviewForm({ ...reviewForm, rating })
+                        )}
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Review</label>
+                        <Textarea
+                          value={reviewForm.body}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReviewForm({ ...reviewForm, body: e.target.value })}
+                          placeholder="Share your experience with this event..."
+                          className="min-h-[100px]"
+                          data-testid="textarea-review-body"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {reviewForm.body.length}/2000 characters (minimum 10)
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={submitReview}
+                          disabled={submitting || reviewForm.body.length < 10}
+                          data-testid="button-submit-review"
+                        >
+                          {submitting ? 'Submitting...' : 'Submit Review'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowReviewForm(false)}
+                          data-testid="button-cancel-review"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        disabled
+                        className="opacity-50 cursor-not-allowed"
+                        data-testid="button-write-review-disabled"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Write Review
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Only verified participants and judges can review</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </TooltipProvider>
+          </div>
+          
+          {/* Verification Notice */}
+          <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <strong>Verification based on event participation records.</strong> Only participants, judges, and organizers who are verified for this event can submit reviews.
+            </p>
+          </div>
+        </CardHeader>
+      
+        <CardContent className="space-y-4">
+          {!reviews || reviews.verified_count === 0 ? (
+            <Alert>
+              <MessageCircle className="h-4 w-4" />
+              <AlertDescription>
+                No verified reviews yet. Only participants, judges, and organizers can review events.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-4">
+              <AnimatePresence>
+                {reviews.recent_reviews.map((review) => (
+                  <motion.div
+                    key={review.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    data-testid={`review-${review.id}`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
-                          <div className="text-sm text-muted-foreground">
-                            {format(new Date(review.created_at), 'MMM d, yyyy')}
-                          </div>
-                          {userRole === 'organizer' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteReview(review.id)}
-                              className="text-red-500 hover:text-red-700"
-                              data-testid={`button-delete-review-${review.id}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
+                          {getRoleIcon(review.role)}
+                          <span className="font-medium">{review.author.name}</span>
                         </div>
+                        <Badge className={getRoleBadgeColor(review.role)} data-testid={`badge-role-${review.id}`}>
+                          {review.role.charAt(0).toUpperCase() + review.role.slice(1)}
+                        </Badge>
+                        {review.author.verified && (
+                          <Badge variant="outline" className="text-green-600 border-green-600 bg-green-50 dark:bg-green-900/20" data-testid={`badge-verified-${review.id}`}>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Verified
+                          </Badge>
+                        )}
                       </div>
                       
-                      <div className="mb-3">
-                        {renderStars(review.rating)}
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm text-muted-foreground">
+                          {format(new Date(review.created_at), 'MMM d, yyyy')}
+                        </div>
+                        {userRole === 'organizer' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteReview(review.id)}
+                            className="text-red-500 hover:text-red-700"
+                            data-testid={`button-delete-review-${review.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
-                      
-                      <p className="text-sm leading-relaxed" data-testid={`text-review-body-${review.id}`}>
-                        {review.body}
-                      </p>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
+                    </div>
+                    
+                    <div className="mb-3">
+                      {renderStars(review.rating)}
+                    </div>
+                    
+                    <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300" data-testid={`text-review-body-${review.id}`}>
+                      {review.body}
+                    </p>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

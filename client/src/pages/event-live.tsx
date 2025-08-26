@@ -177,6 +177,7 @@ export function EventLivePage() {
               eventId={mockEvent.id}
               userRole={userRole}
               authToken={authToken}
+              isUserVerified={['participant', 'judge', 'organizer'].includes(userRole)}
               className="h-[calc(100vh-300px)] overflow-y-auto"
             />
           </TabsContent>
