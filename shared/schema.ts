@@ -23,6 +23,8 @@ export const events = pgTable("events", {
   startAt: timestamp("start_at").notNull(),
   endAt: timestamp("end_at").notNull(),
   organizerId: uuid("organizer_id").notNull().references(() => users.id),
+  rubricId: uuid("rubric_id").references(() => rubrics.id),
+  feedbackReleaseAt: timestamp("feedback_release_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -46,6 +48,29 @@ export const teamMembers = pgTable("team_members", {
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 });
 
+// Rubrics table for transparent feedback
+export const rubrics = pgTable("rubrics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id").notNull().references(() => events.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Rubric criteria for detailed evaluation
+export const rubricCriteria = pgTable("rubric_criteria", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  rubricId: uuid("rubric_id").notNull().references(() => rubrics.id),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  label: varchar("label", { length: 255 }).notNull(),
+  weight: integer("weight").notNull().default(1),
+  description: text("description"),
+  displayOrder: integer("display_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueRubricKey: unique().on(table.rubricId, table.key),
+}));
+
 // Submissions table
 export const submissions = pgTable("submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -58,6 +83,7 @@ export const submissions = pgTable("submissions", {
   fileName: varchar("file_name", { length: 255 }),
   fileSize: varchar("file_size", { length: 50 }),
   submittedById: uuid("submitted_by_id").notNull().references(() => users.id),
+  decision: varchar("decision", { length: 20 }).notNull().default("pending"), // 'pending','accepted','rejected','finalist','winner'
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -90,9 +116,11 @@ export const scores = pgTable("scores", {
   submissionId: uuid("submission_id").notNull().references(() => submissions.id),
   judgeId: uuid("judge_id").notNull().references(() => users.id),
   criteriaId: uuid("criteria_id").notNull().references(() => evaluationCriteria.id),
+  rubricCriteriaId: uuid("rubric_criteria_id").references(() => rubricCriteria.id),
   round: integer("round").notNull().default(1),
   score: decimal("score", { precision: 4, scale: 2 }).notNull(),
   feedback: text("feedback"),
+  comment: text("comment"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
@@ -147,9 +175,14 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
     fields: [events.organizerId],
     references: [users.id],
   }),
+  rubric: one(rubrics, {
+    fields: [events.rubricId],
+    references: [rubrics.id],
+  }),
   teams: many(teams),
   judgeAssignments: many(judgeAssignments),
   evaluationCriteria: many(evaluationCriteria),
+  rubrics: many(rubrics),
 }));
 
 export const teamsRelations = relations(teams, ({ one, many }) => ({
@@ -211,6 +244,22 @@ export const evaluationCriteriaRelations = relations(evaluationCriteria, ({ one,
   scores: many(scores),
 }));
 
+export const rubricsRelations = relations(rubrics, ({ one, many }) => ({
+  event: one(events, {
+    fields: [rubrics.eventId],
+    references: [events.id],
+  }),
+  criteria: many(rubricCriteria),
+}));
+
+export const rubricCriteriaRelations = relations(rubricCriteria, ({ one, many }) => ({
+  rubric: one(rubrics, {
+    fields: [rubricCriteria.rubricId],
+    references: [rubrics.id],
+  }),
+  scores: many(scores),
+}));
+
 export const scoresRelations = relations(scores, ({ one }) => ({
   submission: one(submissions, {
     fields: [scores.submissionId],
@@ -223,6 +272,10 @@ export const scoresRelations = relations(scores, ({ one }) => ({
   criteria: one(evaluationCriteria, {
     fields: [scores.criteriaId],
     references: [evaluationCriteria.id],
+  }),
+  rubricCriterion: one(rubricCriteria, {
+    fields: [scores.rubricCriteriaId],
+    references: [rubricCriteria.id],
   }),
 }));
 
@@ -245,6 +298,8 @@ export const insertUserSchema = createInsertSchema(users);
 export const insertEventSchema = createInsertSchema(events);
 export const insertTeamSchema = createInsertSchema(teams);
 export const insertTeamMemberSchema = createInsertSchema(teamMembers);
+export const insertRubricSchema = createInsertSchema(rubrics);
+export const insertRubricCriteriaSchema = createInsertSchema(rubricCriteria);
 export const insertSubmissionSchema = createInsertSchema(submissions);
 export const insertJudgeAssignmentSchema = createInsertSchema(judgeAssignments);
 export const insertEvaluationCriteriaSchema = createInsertSchema(evaluationCriteria);
@@ -261,6 +316,10 @@ export type Team = typeof teams.$inferSelect;
 export type InsertTeam = typeof teams.$inferInsert;
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = typeof teamMembers.$inferInsert;
+export type Rubric = typeof rubrics.$inferSelect;
+export type InsertRubric = typeof rubrics.$inferInsert;
+export type RubricCriteria = typeof rubricCriteria.$inferSelect;
+export type InsertRubricCriteria = typeof rubricCriteria.$inferInsert;
 export type Submission = typeof submissions.$inferSelect;
 export type InsertSubmission = typeof submissions.$inferInsert;
 export type JudgeAssignment = typeof judgeAssignments.$inferSelect;

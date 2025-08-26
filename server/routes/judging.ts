@@ -3,7 +3,7 @@ import { verifyFirebaseToken, requireRole, type AuthenticatedRequest } from '../
 import { db } from '../db';
 import { 
   users, submissions, judgeAssignments, evaluationCriteria, scores, 
-  teams, events 
+  teams, events, rubrics, rubricCriteria 
 } from '@shared/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -16,13 +16,14 @@ const asyncHandler = (fn: (req: Request, res: Response, next?: NextFunction) => 
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 
-// Validation schema for scoring
+// Validation schema for scoring with rubric criteria
 const scoreSubmissionSchema = z.object({
   submission_id: z.string().uuid('Invalid submission ID'),
   round: z.number().int().min(1).max(10),
   items: z.array(z.object({
-    criteria: z.string().uuid('Invalid criteria ID'),
+    criteria_key: z.string().min(1, 'Criteria key is required'),
     score: z.number().min(0).max(10),
+    comment: z.string().optional(),
   })).min(1, 'At least one criteria score required'),
   feedback: z.string().optional(),
 });
@@ -92,12 +93,25 @@ router.get('/events/:eventId/round/:round',
         });
       }
 
-      // Get evaluation criteria for this event
+      // Get rubric criteria for this event
+      const rubric = await db
+        .select()
+        .from(rubrics)
+        .where(eq(rubrics.eventId, eventId))
+        .limit(1);
+
+      if (!rubric.length) {
+        return res.status(404).json({
+          error: 'No rubric found',
+          message: 'No rubric has been created for this event yet'
+        });
+      }
+
       const criteria = await db
         .select()
-        .from(evaluationCriteria)
-        .where(eq(evaluationCriteria.eventId, eventId))
-        .orderBy(evaluationCriteria.displayOrder);
+        .from(rubricCriteria)
+        .where(eq(rubricCriteria.rubricId, rubric[0].id))
+        .orderBy(rubricCriteria.displayOrder);
 
       // Get submissions for this event with team and existing scores
       const eventSubmissions = await db
@@ -124,8 +138,10 @@ router.get('/events/:eventId/round/:round',
         .select({
           submissionId: scores.submissionId,
           criteriaId: scores.criteriaId,
+          rubricCriteriaId: scores.rubricCriteriaId,
           score: scores.score,
           feedback: scores.feedback,
+          comment: scores.comment,
         })
         .from(scores)
         .where(
@@ -137,6 +153,9 @@ router.get('/events/:eventId/round/:round',
             )})`
           )
         );
+
+      // Create a mapping from criteria IDs to keys for existing scores
+      const criteriaIdToKey = new Map(criteria.map((c: any) => [c.id, c.key]));
 
       // Build submissions with scoring status
       const submissionsWithScores = eventSubmissions.map(submission => {
@@ -164,9 +183,11 @@ router.get('/events/:eventId/round/:round',
             total_criteria: totalCriteria,
           },
           existing_scores: submissionScores.map(score => ({
-            criteria_id: score.criteriaId,
+            criteria_key: criteriaIdToKey.get(score.rubricCriteriaId || score.criteriaId),
+            criteria_id: score.criteriaId, // For backward compatibility
             score: parseFloat(score.score),
             feedback: score.feedback,
+            comment: score.comment,
           })),
         };
       });
@@ -181,10 +202,10 @@ router.get('/events/:eventId/round/:round',
           round: roundNumber,
           criteria: criteria.map(c => ({
             id: c.id,
-            name: c.name,
-            description: c.description,
-            max_score: c.maxScore,
-            weight: parseFloat(c.weight),
+            key: c.key,
+            label: c.label,
+            description: c.description || '',
+            weight: c.weight,
             display_order: c.displayOrder,
           })),
           submissions: submissionsWithScores,
@@ -267,19 +288,32 @@ router.post('/scores',
         });
       }
 
-      // Verify all criteria IDs are valid for this event
-      const eventCriteria = await db
-        .select({ id: evaluationCriteria.id })
-        .from(evaluationCriteria)
-        .where(eq(evaluationCriteria.eventId, submission.eventId));
+      // Get rubric criteria for this event to validate against
+      const eventRubric = await db
+        .select()
+        .from(rubrics)
+        .where(eq(rubrics.eventId, submission.eventId))
+        .limit(1);
 
-      const validCriteriaIds = new Set(eventCriteria.map(c => c.id));
-      const invalidCriteria = items.filter(item => !validCriteriaIds.has(item.criteria));
+      if (!eventRubric.length) {
+        return res.status(404).json({
+          error: 'No rubric found',
+          message: 'No rubric has been created for this event yet'
+        });
+      }
+
+      const eventCriteria = await db
+        .select({ key: rubricCriteria.key, id: rubricCriteria.id, weight: rubricCriteria.weight })
+        .from(rubricCriteria)
+        .where(eq(rubricCriteria.rubricId, eventRubric[0].id));
+
+      const validCriteriaKeys = new Set(eventCriteria.map(c => c.key));
+      const invalidCriteria = items.filter(item => !validCriteriaKeys.has(item.criteria_key));
       
       if (invalidCriteria.length > 0) {
         return res.status(400).json({
           error: 'Invalid criteria',
-          message: `Invalid criteria IDs: ${invalidCriteria.map(c => c.criteria).join(', ')}`
+          message: `Invalid criteria keys: ${invalidCriteria.map(c => c.criteria_key).join(', ')}`
         });
       }
 
@@ -294,20 +328,41 @@ router.post('/scores',
           )
         );
 
-      // Insert new scores
-      const scoreInserts = items.map(item => ({
-        submissionId: submission_id,
-        judgeId: judge.id,
-        criteriaId: item.criteria,
-        round,
-        score: item.score.toString(),
-        feedback: feedback || null,
-      }));
+      // Create a mapping from criteria keys to criteria IDs
+      const criteriaKeyToId = new Map(eventCriteria.map(c => [c.key, c.id]));
+
+      // Insert new scores with rubric criteria mapping
+      const scoreInserts = items.map(item => {
+        const criteriaId = criteriaKeyToId.get(item.criteria_key);
+        if (!criteriaId) {
+          throw new Error(`Criteria key ${item.criteria_key} not found`);
+        }
+        return {
+          submissionId: submission_id,
+          judgeId: judge.id,
+          criteriaId: criteriaId, // Legacy field for compatibility
+          rubricCriteriaId: criteriaId,
+          round,
+          score: item.score.toString(),
+          feedback: feedback || null,
+          comment: item.comment || null,
+        };
+      });
 
       await db.insert(scores).values(scoreInserts);
 
-      // Calculate aggregate score for this round
-      const aggregateScore = items.reduce((sum, item) => sum + item.score, 0) / items.length;
+      // Calculate weighted aggregate score for this round
+      const totalWeightedScore = items.reduce((sum, item) => {
+        const criteriaWeight = eventCriteria.find(c => c.key === item.criteria_key)?.weight || 1;
+        return sum + (item.score * criteriaWeight);
+      }, 0);
+      
+      const totalWeight = items.reduce((sum, item) => {
+        const criteriaWeight = eventCriteria.find(c => c.key === item.criteria_key)?.weight || 1;
+        return sum + criteriaWeight;
+      }, 0);
+      
+      const aggregateScore = totalWeight > 0 ? totalWeightedScore / totalWeight : 0;
       
       // Broadcast leaderboard update via Socket.IO
       try {

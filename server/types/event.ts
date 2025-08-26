@@ -44,6 +44,42 @@ export const AssignJudgeSchema = z.object({
     .uuid('User ID must be a valid UUID')
 });
 
+// Rubric creation schema
+export const CreateRubricSchema = z.object({
+  name: z.string()
+    .min(1, 'Rubric name is required')
+    .max(100, 'Rubric name must be less than 100 characters'),
+  description: z.string()
+    .min(1, 'Rubric description is required')
+    .max(1000, 'Rubric description must be less than 1000 characters'),
+  criteria: z.array(z.object({
+    key: z.string()
+      .min(1, 'Criterion key is required')
+      .max(50, 'Criterion key must be less than 50 characters')
+      .regex(/^[a-z0-9_]+$/, 'Criterion key must contain only lowercase letters, numbers, and underscores'),
+    label: z.string()
+      .min(1, 'Criterion label is required')
+      .max(100, 'Criterion label must be less than 100 characters'),
+    weight: z.number()
+      .int('Weight must be a whole number')
+      .min(1, 'Weight must be at least 1')
+      .max(100, 'Weight cannot exceed 100'),
+    description: z.string()
+      .min(1, 'Criterion description is required')
+      .max(500, 'Criterion description must be less than 500 characters')
+  })).min(1, 'At least one criterion is required')
+    .max(10, 'Cannot have more than 10 criteria')
+});
+
+// Feedback release schema
+export const SetFeedbackReleaseSchema = z.object({
+  feedback_release_at: z.string()
+    .datetime({ message: 'Feedback release date must be a valid ISO datetime' })
+    .refine((date) => new Date(date) > new Date(), {
+      message: 'Feedback release date must be in the future'
+    })
+});
+
 // Event response types
 export interface Event {
   id: string;
@@ -85,7 +121,32 @@ export interface EventWithDetails extends Event {
   })[];
 }
 
+export interface Rubric {
+  id: string;
+  event_id: string;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
+export interface RubricCriterion {
+  id: string;
+  rubric_id: string;
+  key: string;
+  label: string;
+  weight: number;
+  description: string;
+  display_order: number;
+  created_at: string;
+}
+
+export interface RubricWithCriteria extends Rubric {
+  criteria: RubricCriterion[];
+}
+
 // Type exports for request bodies
 export type CreateEventRequest = z.infer<typeof CreateEventSchema>;
 export type CreateTrackRequest = z.infer<typeof CreateTrackSchema>;
 export type AssignJudgeRequest = z.infer<typeof AssignJudgeSchema>;
+export type CreateRubricRequest = z.infer<typeof CreateRubricSchema>;
+export type SetFeedbackReleaseRequest = z.infer<typeof SetFeedbackReleaseSchema>;

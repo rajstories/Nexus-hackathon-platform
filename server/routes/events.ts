@@ -6,9 +6,13 @@ import {
   CreateEventSchema, 
   CreateTrackSchema, 
   AssignJudgeSchema,
+  CreateRubricSchema,
+  SetFeedbackReleaseSchema,
   CreateEventRequest,
   CreateTrackRequest,
-  AssignJudgeRequest
+  AssignJudgeRequest,
+  CreateRubricRequest,
+  SetFeedbackReleaseRequest
 } from '../types/event';
 import { ZodError } from 'zod';
 
@@ -192,6 +196,82 @@ router.get('/:id',
         data: event
       });
     } catch (error) {
+      throw error;
+    }
+  })
+);
+
+// POST /api/events/:id/rubric - Create rubric with criteria (organizer only)
+router.post('/:id/rubric',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const validatedData = CreateRubricSchema.parse(req.body) as CreateRubricRequest;
+      
+      // Check if event exists and user is the organizer
+      const isOrganizer = await EventRepository.isEventOrganizer(eventId, req.user!.userId);
+      if (!isOrganizer) {
+        return res.status(403).json({
+          error: 'Forbidden',
+          message: 'You can only create rubrics for events you organize'
+        });
+      }
+      
+      // Check if rubric already exists for this event
+      const existingRubric = await EventRepository.findRubricByEventId(eventId);
+      if (existingRubric) {
+        return res.status(400).json({
+          error: 'Rubric exists',
+          message: 'A rubric already exists for this event'
+        });
+      }
+      
+      const rubric = await EventRepository.createRubric(eventId, validatedData);
+      
+      res.status(201).json({
+        success: true,
+        data: rubric,
+        message: 'Rubric created successfully'
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json(formatZodErrors(error));
+      }
+      throw error;
+    }
+  })
+);
+
+// PUT /api/events/:id/feedback-release - Set feedback release date (organizer only)
+router.put('/:id/feedback-release',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const validatedData = SetFeedbackReleaseSchema.parse(req.body) as SetFeedbackReleaseRequest;
+      
+      // Check if event exists and user is the organizer
+      const isOrganizer = await EventRepository.isEventOrganizer(eventId, req.user!.userId);
+      if (!isOrganizer) {
+        return res.status(403).json({
+          error: 'Forbidden',
+          message: 'You can only set feedback release for events you organize'
+        });
+      }
+      
+      await EventRepository.setFeedbackReleaseDate(eventId, validatedData.feedback_release_at);
+      
+      res.json({
+        success: true,
+        message: 'Feedback release date set successfully'
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json(formatZodErrors(error));
+      }
       throw error;
     }
   })

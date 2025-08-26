@@ -1,6 +1,6 @@
 import { db } from '../../db';
-import { events, teams, judgeAssignments, users } from '@shared/schema';
-import { Event, Track, EventJudge, EventWithDetails } from '../../types/event';
+import { events, teams, judgeAssignments, users, rubrics, rubricCriteria } from '@shared/schema';
+import { Event, Track, EventJudge, EventWithDetails, Rubric, RubricWithCriteria } from '../../types/event';
 import { eq } from 'drizzle-orm';
 
 export class EventRepository {
@@ -136,5 +136,111 @@ export class EventRepository {
       created_at: event.createdAt.toISOString(),
       updated_at: event.updatedAt.toISOString(),
     }));
+  }
+
+  static async createRubric(eventId: string, rubricData: {
+    name: string;
+    description: string;
+    criteria: Array<{
+      key: string;
+      label: string;
+      weight: number;
+      description: string;
+    }>;
+  }): Promise<RubricWithCriteria> {
+    return await db.transaction(async (tx) => {
+      // Create the rubric
+      const [rubric] = await tx
+        .insert(rubrics)
+        .values({
+          eventId: eventId,
+          name: rubricData.name,
+          description: rubricData.description,
+        })
+        .returning();
+
+      // Create the criteria
+      const criteriaToInsert = rubricData.criteria.map((criterion, index) => ({
+        rubricId: rubric.id,
+        key: criterion.key,
+        label: criterion.label,
+        weight: criterion.weight,
+        description: criterion.description,
+        displayOrder: index,
+      }));
+
+      const createdCriteria = await tx
+        .insert(rubricCriteria)
+        .values(criteriaToInsert)
+        .returning();
+
+      // Update event with rubric_id
+      await tx
+        .update(events)
+        .set({ rubricId: rubric.id })
+        .where(eq(events.id, eventId));
+
+      return {
+        id: rubric.id,
+        event_id: rubric.eventId,
+        name: rubric.name,
+        description: rubric.description || '',
+        created_at: rubric.createdAt.toISOString(),
+        criteria: createdCriteria.map((criterion) => ({
+          id: criterion.id,
+          rubric_id: criterion.rubricId,
+          key: criterion.key,
+          label: criterion.label,
+          weight: criterion.weight,
+          description: criterion.description || '',
+          display_order: criterion.displayOrder,
+          created_at: criterion.createdAt.toISOString(),
+        })),
+      };
+    });
+  }
+
+  static async setFeedbackReleaseDate(eventId: string, feedbackReleaseAt: string): Promise<void> {
+    await db
+      .update(events)
+      .set({ 
+        feedbackReleaseAt: new Date(feedbackReleaseAt),
+        updatedAt: new Date()
+      })
+      .where(eq(events.id, eventId));
+  }
+
+  static async findRubricByEventId(eventId: string): Promise<RubricWithCriteria | null> {
+    const [rubric] = await db
+      .select()
+      .from(rubrics)
+      .where(eq(rubrics.eventId, eventId))
+      .limit(1);
+
+    if (!rubric) return null;
+
+    const criteria = await db
+      .select()
+      .from(rubricCriteria)
+      .where(eq(rubricCriteria.rubricId, rubric.id))
+      .orderBy(rubricCriteria.displayOrder);
+
+    return {
+      id: rubric.id,
+      event_id: rubric.eventId,
+      name: rubric.name,
+      description: rubric.description || '',
+      created_at: rubric.createdAt.toISOString(),
+      criteria: criteria.map((criterion) => ({
+        id: criterion.id,
+        rubric_id: criterion.rubricId,
+        key: criterion.key,
+        label: criterion.label,
+        weight: criterion.weight,
+        description: criterion.description || '',
+        display_order: criterion.displayOrder,
+        created_at: criterion.createdAt.toISOString(),
+      })),
+    };
   }
 }
