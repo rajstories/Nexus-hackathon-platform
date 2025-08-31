@@ -74,12 +74,13 @@ export function OrganizerDashboard() {
     submissions: 0
   };
 
-  const tracks = [
-    { id: 1, name: "AI & Machine Learning", description: "Build intelligent applications", teams: 15 },
-    { id: 2, name: "Web3 & Blockchain", description: "Decentralized solutions", teams: 12 },
-    { id: 3, name: "Social Impact", description: "Technology for good", teams: 8 },
-    { id: 4, name: "Open Innovation", description: "Any creative solution", teams: 7 }
-  ];
+  // Fetch tracks from backend
+  const { data: tracksData, isLoading: tracksLoading } = useQuery({
+    queryKey: ["/api/events", currentEvent.id, "tracks"],
+    enabled: !!currentEvent.id && currentEvent.id !== ''
+  });
+  
+  const tracks = tracksData?.data || [];
 
   const judges = [
     { id: 1, name: "Dr. Sarah Kim", expertise: "AI/ML", email: "sarah@company.com", status: "confirmed" },
@@ -131,6 +132,14 @@ export function OrganizerDashboard() {
     endDate: new Date()
   });
 
+  const [newTrackData, setNewTrackData] = useState({
+    name: '',
+    description: ''
+  });
+
+  const [editingTrack, setEditingTrack] = useState<{id: string, name: string, description: string} | null>(null);
+  const [editTrackDialogOpen, setEditTrackDialogOpen] = useState(false);
+
   const handleCreateEvent = () => {
     console.log('Form data:', newEventData); // Debug log
     
@@ -164,12 +173,113 @@ export function OrganizerDashboard() {
     createEventMutation.mutate(eventData);
   };
 
+  // Create track mutation
+  const createTrackMutation = useMutation({
+    mutationFn: async (trackData: {name: string, description: string}) => {
+      return apiRequest("POST", `/api/events/${currentEvent.id}/tracks`, trackData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/events", currentEvent.id, "tracks"] });
+      toast({
+        title: "Track Created",
+        description: "New competition track has been added!"
+      });
+      setNewTrackData({ name: '', description: '' });
+      setTrackDialogOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create track. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Update track mutation
+  const updateTrackMutation = useMutation({
+    mutationFn: async (data: {id: string, name: string, description: string}) => {
+      return apiRequest("PUT", `/api/events/${currentEvent.id}/tracks/${data.id}`, {
+        name: data.name,
+        description: data.description
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/events", currentEvent.id, "tracks"] });
+      toast({
+        title: "Track Updated",
+        description: "Track has been updated successfully!"
+      });
+      setEditingTrack(null);
+      setEditTrackDialogOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update track. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete track mutation
+  const deleteTrackMutation = useMutation({
+    mutationFn: async (trackId: string) => {
+      return apiRequest("DELETE", `/api/events/${currentEvent.id}/tracks/${trackId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/events", currentEvent.id, "tracks"] });
+      toast({
+        title: "Track Deleted",
+        description: "Track has been deleted successfully!"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete track. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleCreateTrack = () => {
-    toast({
-      title: "Track Created",
-      description: "New competition track has been added!"
+    if (!newTrackData.name || !newTrackData.description) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+    createTrackMutation.mutate(newTrackData);
+  };
+
+  const handleEditTrack = (track: any) => {
+    setEditingTrack({
+      id: track.id,
+      name: track.name,
+      description: track.description
     });
-    setTrackDialogOpen(false);
+    setEditTrackDialogOpen(true);
+  };
+
+  const handleUpdateTrack = () => {
+    if (!editingTrack?.name || !editingTrack?.description) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+    updateTrackMutation.mutate(editingTrack);
+  };
+
+  const handleDeleteTrack = (trackId: string) => {
+    if (confirm('Are you sure you want to delete this track?')) {
+      deleteTrackMutation.mutate(trackId);
+    }
   };
 
   const handleSendAnnouncement = () => {
@@ -482,14 +592,31 @@ export function OrganizerDashboard() {
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="track-name">Track Name</Label>
-                        <Input id="track-name" placeholder="Enter track name" data-testid="input-track-name" />
+                        <Input 
+                          id="track-name" 
+                          placeholder="Enter track name" 
+                          data-testid="input-track-name"
+                          value={newTrackData.name}
+                          onChange={(e) => setNewTrackData({...newTrackData, name: e.target.value})}
+                        />
                       </div>
                       <div>
                         <Label htmlFor="track-description">Description</Label>
-                        <Textarea id="track-description" placeholder="Describe this track" data-testid="input-track-description" />
+                        <Textarea 
+                          id="track-description" 
+                          placeholder="Describe this track" 
+                          data-testid="input-track-description"
+                          value={newTrackData.description}
+                          onChange={(e) => setNewTrackData({...newTrackData, description: e.target.value})}
+                        />
                       </div>
-                      <Button onClick={handleCreateTrack} className="w-full" data-testid="button-submit-track">
-                        Create Track
+                      <Button 
+                        onClick={handleCreateTrack} 
+                        className="w-full" 
+                        data-testid="button-submit-track"
+                        disabled={createTrackMutation.isPending}
+                      >
+                        {createTrackMutation.isPending ? "Creating..." : "Create Track"}
                       </Button>
                     </div>
                   </DialogContent>
@@ -497,27 +624,49 @@ export function OrganizerDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                {tracks.map((track) => (
-                  <div key={track.id} className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium" data-testid={`text-track-${track.id}`}>{track.name}</h3>
-                      <Badge variant="secondary">{track.teams} teams</Badge>
+              {tracksLoading ? (
+                <div className="text-center py-8">
+                  <div className="text-muted-foreground">Loading tracks...</div>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {tracks.map((track: any) => (
+                    <div key={track.id} className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium" data-testid={`text-track-${track.id}`}>{track.name}</h3>
+                        <Badge variant="secondary">{track.max_teams} max teams</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">{track.description}</p>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleEditTrack(track)}
+                          data-testid={`button-edit-track-${track.id}`}
+                        >
+                          <Edit className="w-3 h-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleDeleteTrack(track.id)}
+                          disabled={deleteTrackMutation.isPending}
+                          data-testid={`button-delete-track-${track.id}`}
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mb-3">{track.description}</p>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Edit className="w-3 h-3 mr-1" />
-                        Edit
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="w-3 h-3 mr-1" />
-                        Delete
-                      </Button>
+                  ))}
+                  {tracks.length === 0 && (
+                    <div className="col-span-2 text-center py-8">
+                      <div className="text-muted-foreground">No tracks created yet. Add your first track!</div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -720,6 +869,43 @@ export function OrganizerDashboard() {
           />
         </TabsContent>
       </Tabs>
+      
+      {/* Edit Track Dialog */}
+      <Dialog open={editTrackDialogOpen} onOpenChange={setEditTrackDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Track</DialogTitle>
+            <DialogDescription>Update competition track details</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-track-name">Track Name</Label>
+              <Input 
+                id="edit-track-name" 
+                placeholder="Enter track name" 
+                value={editingTrack?.name || ''}
+                onChange={(e) => setEditingTrack(prev => prev ? {...prev, name: e.target.value} : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-track-description">Description</Label>
+              <Textarea 
+                id="edit-track-description" 
+                placeholder="Describe this track" 
+                value={editingTrack?.description || ''}
+                onChange={(e) => setEditingTrack(prev => prev ? {...prev, description: e.target.value} : null)}
+              />
+            </div>
+            <Button 
+              onClick={handleUpdateTrack} 
+              className="w-full"
+              disabled={updateTrackMutation.isPending}
+            >
+              {updateTrackMutation.isPending ? "Updating..." : "Update Track"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

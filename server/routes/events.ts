@@ -121,6 +121,87 @@ router.post('/:id/tracks',
   })
 );
 
+// GET /api/events/:id/tracks - Get tracks for event
+router.get('/:id/tracks',
+  verifyFirebaseToken,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const tracks = await EventRepository.getEventTracks(eventId);
+      
+      res.json({
+        success: true,
+        data: tracks
+      });
+    } catch (error) {
+      throw error;
+    }
+  })
+);
+
+// PUT /api/events/:eventId/tracks/:trackId - Update track (organizer only)  
+router.put('/:eventId/tracks/:trackId',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { eventId, trackId } = req.params;
+      const validatedData = CreateTrackSchema.parse(req.body) as CreateTrackRequest;
+      
+      // Check if event exists and user is the organizer
+      const isOrganizer = await EventRepository.isEventOrganizer(eventId, req.user!.userId);
+      if (!isOrganizer) {
+        return res.status(403).json({
+          error: 'Forbidden',
+          message: 'You can only update tracks for events you organize'
+        });
+      }
+      
+      const track = await EventRepository.updateTrack(trackId, validatedData);
+      
+      res.json({
+        success: true,
+        data: track,
+        message: 'Track updated successfully'
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json(formatZodErrors(error));
+      }
+      throw error;
+    }
+  })
+);
+
+// DELETE /api/events/:eventId/tracks/:trackId - Delete track (organizer only)
+router.delete('/:eventId/tracks/:trackId',
+  verifyFirebaseToken,
+  requireRole(['organizer']),
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { eventId, trackId } = req.params;
+      
+      // Check if event exists and user is the organizer
+      const isOrganizer = await EventRepository.isEventOrganizer(eventId, req.user!.userId);
+      if (!isOrganizer) {
+        return res.status(403).json({
+          error: 'Forbidden',
+          message: 'You can only delete tracks for events you organize'
+        });
+      }
+      
+      await EventRepository.deleteTrack(trackId);
+      
+      res.json({
+        success: true,
+        message: 'Track deleted successfully'
+      });
+    } catch (error) {
+      throw error;
+    }
+  })
+);
+
 // POST /api/events/:id/judges - Assign judge to event (organizer only)
 router.post('/:id/judges',
   verifyFirebaseToken,

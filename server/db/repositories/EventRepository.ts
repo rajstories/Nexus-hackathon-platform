@@ -66,8 +66,45 @@ export class EventRepository {
   }
 
   static async getEventTracks(eventId: string): Promise<Track[]> {
-    // Return empty array for now - tracks functionality can be added later
-    return [];
+    // For now return mock data until we implement tracks table
+    return [
+      {
+        id: '1',
+        event_id: eventId,
+        name: 'AI & Machine Learning',
+        description: 'Build intelligent applications',
+        max_teams: 15,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: '2', 
+        event_id: eventId,
+        name: 'Web3 & Blockchain',
+        description: 'Decentralized solutions',
+        max_teams: 12,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: '3',
+        event_id: eventId, 
+        name: 'Social Impact',
+        description: 'Technology for good',
+        max_teams: 8,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: '4',
+        event_id: eventId,
+        name: 'Open Innovation', 
+        description: 'Any creative solution',
+        max_teams: 7,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
   }
 
   static async getEventJudges(eventId: string): Promise<(EventJudge & {
@@ -82,9 +119,9 @@ export class EventRepository {
   }
 
   static async createTrack(eventId: string, trackData: Omit<Track, 'id' | 'event_id' | 'created_at' | 'updated_at'>): Promise<Track> {
-    // Return mock track for now - tracks functionality can be added later
-    return {
-      id: 'mock-track-id',
+    // Generate a new track ID and return the created track
+    const newTrack = {
+      id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       event_id: eventId,
       name: trackData.name,
       description: trackData.description || '',
@@ -92,6 +129,27 @@ export class EventRepository {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     } as Track;
+    
+    return newTrack;
+  }
+
+  static async updateTrack(trackId: string, trackData: Omit<Track, 'id' | 'event_id' | 'created_at' | 'updated_at'>): Promise<Track> {
+    // For now, return updated mock track
+    return {
+      id: trackId,
+      event_id: 'current-event-id',
+      name: trackData.name,
+      description: trackData.description || '',
+      max_teams: trackData.max_teams || 10,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } as Track;
+  }
+
+  static async deleteTrack(trackId: string): Promise<void> {
+    // For now, this is a no-op since we're using mock data
+    // In a real implementation, this would delete from the tracks table
+    return;
   }
 
   static async assignJudge(eventId: string, userId: string): Promise<EventJudge> {
