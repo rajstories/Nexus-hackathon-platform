@@ -96,10 +96,7 @@ export function OrganizerDashboard() {
   // Create event mutation
   const createEventMutation = useMutation({
     mutationFn: async (eventData: any) => {
-      return apiRequest("/api/events", {
-        method: "POST",
-        body: JSON.stringify(eventData),
-      });
+      return apiRequest("POST", "/api/events", eventData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events/organizer"] });
@@ -159,7 +156,7 @@ export function OrganizerDashboard() {
     const eventData = {
       title: newEventData.title,
       description: newEventData.description,
-      mode: newEventData.mode,
+      mode: newEventData.mode === 'hybrid' ? 'online' : newEventData.mode, // Convert hybrid to online for schema
       start_at: newEventData.startDate.toISOString(),
       end_at: newEventData.endDate.toISOString()
     };
