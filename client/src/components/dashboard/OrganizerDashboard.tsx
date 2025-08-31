@@ -34,6 +34,7 @@ import {
   Book
 } from "lucide-react";
 import { SimilarityPanel } from '@/components/SimilarityPanel';
+import { AnnouncementPanel } from '@/components/AnnouncementPanel';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { SponsorManagement } from '@/components/SponsorManagement';
 
@@ -44,6 +45,9 @@ export function OrganizerDashboard() {
   const [trackDialogOpen, setTrackDialogOpen] = useState(false);
   const [announcementDialogOpen, setAnnouncementDialogOpen] = useState(false);
   const [judgeDialogOpen, setJudgeDialogOpen] = useState(false);
+  const [judgeFormData, setJudgeFormData] = useState({
+    judge_email: ''
+  });
   const [policyDialogOpen, setPolicyDialogOpen] = useState(false);
 
   // Fetch events created by this organizer
@@ -82,17 +86,21 @@ export function OrganizerDashboard() {
   
   const tracks = tracksData?.data || [];
 
-  const judges = [
-    { id: 1, name: "Dr. Sarah Kim", expertise: "AI/ML", email: "sarah@company.com", status: "confirmed" },
-    { id: 2, name: "Alex Rodriguez", expertise: "Web Dev", email: "alex@startup.com", status: "pending" },
-    { id: 3, name: "Maria Chen", expertise: "Design", email: "maria@agency.com", status: "confirmed" }
-  ];
+  // Fetch judges data
+  const { data: judgesData, isLoading: judgesLoading } = useQuery({
+    queryKey: ["/api/events", currentEvent.id, "judges"],
+    enabled: !!currentEvent.id && currentEvent.id !== ''
+  });
+  
+  const judges = judgesData?.data || [];
 
-  const submissions = [
-    { id: 1, team: "Team Alpha", project: "Smart City Dashboard", track: "AI & ML", submitted: "2025-08-27 10:30", status: "submitted" },
-    { id: 2, team: "Code Warriors", project: "EcoTracker", track: "Social Impact", submitted: "2025-08-27 11:15", status: "submitted" },
-    { id: 3, team: "Innovation Squad", project: "DeFi Protocol", track: "Web3", submitted: "2025-08-27 09:45", status: "submitted" }
-  ];
+  // Fetch submissions data
+  const { data: submissionsData, isLoading: submissionsLoading } = useQuery({
+    queryKey: ["/api/events", currentEvent.id, "submissions"],
+    enabled: !!currentEvent.id && currentEvent.id !== ''
+  });
+  
+  const submissions = submissionsData?.data || [];
 
   // Create event mutation
   const createEventMutation = useMutation({
@@ -264,6 +272,41 @@ export function OrganizerDashboard() {
     setEditTrackDialogOpen(true);
   };
 
+  // Assign judge mutation
+  const assignJudgeMutation = useMutation({
+    mutationFn: async (judgeData: {judge_email: string}) => {
+      return apiRequest("POST", `/api/admin/events/${currentEvent.id}/judges`, judgeData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/events", currentEvent.id, "judges"] });
+      toast({
+        title: "Success",
+        description: "Judge assigned successfully!"
+      });
+      setJudgeFormData({ judge_email: '' });
+      setJudgeDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign judge. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleAssignJudge = () => {
+    if (!judgeFormData.judge_email) {
+      toast({
+        title: "Error",
+        description: "Please enter a judge email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+    assignJudgeMutation.mutate(judgeFormData);
+  };
+
   const handleUpdateTrack = () => {
     if (!editingTrack?.name || !editingTrack?.description) {
       toast({
@@ -290,13 +333,6 @@ export function OrganizerDashboard() {
     setAnnouncementDialogOpen(false);
   };
 
-  const handleInviteJudge = () => {
-    toast({
-      title: "Judge Invited",
-      description: "Invitation has been sent to the judge!"
-    });
-    setJudgeDialogOpen(false);
-  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -672,74 +708,11 @@ export function OrganizerDashboard() {
         </TabsContent>
 
         <TabsContent value="announcements" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Megaphone className="w-5 h-5" />
-                    Announcements
-                  </CardTitle>
-                  <CardDescription>Send updates to all participants</CardDescription>
-                </div>
-                <Dialog open={announcementDialogOpen} onOpenChange={setAnnouncementDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button data-testid="button-create-announcement">
-                      <Send className="w-4 h-4 mr-2" />
-                      New Announcement
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create Announcement</DialogTitle>
-                      <DialogDescription>Send a message to all participants</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="announcement-title">Title</Label>
-                        <Input id="announcement-title" placeholder="Enter announcement title" data-testid="input-announcement-title" />
-                      </div>
-                      <div>
-                        <Label htmlFor="announcement-message">Message</Label>
-                        <Textarea 
-                          id="announcement-message" 
-                          placeholder="Write your announcement message" 
-                          className="min-h-[100px]"
-                          data-testid="input-announcement-message"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="announcement-priority">Priority</Label>
-                        <Select>
-                          <SelectTrigger data-testid="select-priority">
-                            <SelectValue placeholder="Select priority" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="normal">Normal</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="urgent">Urgent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button onClick={handleSendAnnouncement} className="w-full" data-testid="button-send-announcement">
-                        <Send className="w-4 h-4 mr-2" />
-                        Send Announcement
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center py-8 text-muted-foreground">
-                  <Megaphone className="w-12 h-12 mx-auto mb-4" />
-                  <p>No announcements yet. Create your first announcement to get started.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <AnnouncementPanel 
+            eventId={currentEvent.id.toString()}
+            userRole="organizer"
+            authToken="mock-firebase-token-organizer"
+          />
         </TabsContent>
 
         <TabsContent value="judges" className="space-y-6">
@@ -767,19 +740,23 @@ export function OrganizerDashboard() {
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="judge-name">Judge Name</Label>
-                        <Input id="judge-name" placeholder="Enter judge name" data-testid="input-judge-name" />
+                        <Label htmlFor="judge-email">Judge Email</Label>
+                        <Input 
+                          id="judge-email" 
+                          type="email" 
+                          placeholder="judge@example.com" 
+                          data-testid="input-judge-email"
+                          value={judgeFormData.judge_email}
+                          onChange={(e) => setJudgeFormData({judge_email: e.target.value})}
+                        />
                       </div>
-                      <div>
-                        <Label htmlFor="judge-email">Email</Label>
-                        <Input id="judge-email" type="email" placeholder="judge@example.com" data-testid="input-judge-email" />
-                      </div>
-                      <div>
-                        <Label htmlFor="judge-expertise">Area of Expertise</Label>
-                        <Input id="judge-expertise" placeholder="e.g., AI/ML, Web Development" data-testid="input-judge-expertise" />
-                      </div>
-                      <Button onClick={handleInviteJudge} className="w-full" data-testid="button-send-invite">
-                        Send Invitation
+                      <Button 
+                        onClick={handleAssignJudge} 
+                        className="w-full" 
+                        data-testid="button-send-invite"
+                        disabled={assignJudgeMutation.isPending}
+                      >
+                        {assignJudgeMutation.isPending ? "Assigning..." : "Assign Judge"}
                       </Button>
                     </div>
                   </DialogContent>
@@ -787,30 +764,36 @@ export function OrganizerDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {judges.map((judge) => (
-                  <div key={judge.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
-                        <AvatarFallback>{judge.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h4 className="font-medium" data-testid={`text-judge-${judge.id}`}>{judge.name}</h4>
-                        <p className="text-sm text-muted-foreground">{judge.email}</p>
-                        <p className="text-sm text-muted-foreground">{judge.expertise}</p>
-                      </div>
+              {judgesLoading ? (
+                <div className="text-center py-8">
+                  <div className="text-muted-foreground">Loading judges...</div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {judges && judges.length > 0 ? (
+                    <div className="grid gap-4">
+                      {judges.map((judge: any) => (
+                        <div key={judge.id} className="p-4 border rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="font-medium" data-testid={`text-judge-${judge.id}`}>
+                                {judge.judge_email}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">Judge</p>
+                            </div>
+                            <Badge variant="outline">Active</Badge>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={judge.status === 'confirmed' ? 'default' : 'secondary'}>
-                        {judge.status}
-                      </Badge>
-                      <Button variant="outline" size="sm">
-                        <Send className="w-3 h-3" />
-                      </Button>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <UserCheck className="w-12 h-12 mx-auto mb-4" />
+                      <p>No judges assigned yet. Invite your first judge to get started.</p>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -825,22 +808,30 @@ export function OrganizerDashboard() {
               <CardDescription>View and manage submitted projects</CardDescription>
             </CardHeader>
             <CardContent>
-              {submissions.length > 0 ? (
+              {submissionsLoading ? (
+                <div className="text-center py-8">
+                  <div className="text-muted-foreground">Loading submissions...</div>
+                </div>
+              ) : submissions.length > 0 ? (
                 <div className="space-y-4">
-                  {submissions.map((submission) => (
+                  {submissions.map((submission: any) => (
                     <div key={submission.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <h4 className="font-medium" data-testid={`text-submission-${submission.id}`}>{submission.project}</h4>
-                          <p className="text-sm text-muted-foreground">by {submission.team}</p>
+                          <h4 className="font-medium" data-testid={`text-submission-${submission.id}`}>
+                            {submission.project_name || submission.title}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">by {submission.team_name}</p>
                         </div>
                         <div className="text-right">
-                          <Badge variant="outline">{submission.track}</Badge>
-                          <p className="text-xs text-muted-foreground mt-1">{submission.submitted}</p>
+                          <Badge variant="outline">{submission.track_name}</Badge>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(submission.submitted_at).toLocaleString()}
+                          </p>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" data-testid={`button-view-${submission.id}`}>
                           <Eye className="w-3 h-3 mr-1" />
                           View Details
                         </Button>
