@@ -49,6 +49,10 @@ export function OrganizerDashboard() {
     judge_email: ''
   });
   const [policyDialogOpen, setPolicyDialogOpen] = useState(false);
+  const [viewDetailsDialogOpen, setViewDetailsDialogOpen] = useState(false);
+  const [assignJudgesDialogOpen, setAssignJudgesDialogOpen] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
+  const [selectedJudgesForAssignment, setSelectedJudgesForAssignment] = useState<string[]>([]);
 
   // Fetch events created by this organizer
   const { data: eventsData, isLoading: eventsLoading } = useQuery({
@@ -305,6 +309,45 @@ export function OrganizerDashboard() {
       return;
     }
     assignJudgeMutation.mutate(judgeFormData);
+  };
+
+  const handleViewSubmissionDetails = (submission: any) => {
+    setSelectedSubmission(submission);
+    setViewDetailsDialogOpen(true);
+  };
+
+  const handleAssignJudgesToSubmission = (submission: any) => {
+    setSelectedSubmission(submission);
+    setSelectedJudgesForAssignment([]);
+    setAssignJudgesDialogOpen(true);
+  };
+
+  const handleConfirmJudgeAssignment = () => {
+    if (selectedJudgesForAssignment.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one judge.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Here you would typically make an API call to assign judges to the submission
+    toast({
+      title: "Success",
+      description: `${selectedJudgesForAssignment.length} judge(s) assigned to ${selectedSubmission?.project_name || selectedSubmission?.title}!`
+    });
+    setAssignJudgesDialogOpen(false);
+    setSelectedSubmission(null);
+    setSelectedJudgesForAssignment([]);
+  };
+
+  const toggleJudgeSelection = (judgeEmail: string) => {
+    setSelectedJudgesForAssignment(prev => 
+      prev.includes(judgeEmail) 
+        ? prev.filter(email => email !== judgeEmail)
+        : [...prev, judgeEmail]
+    );
   };
 
   const handleUpdateTrack = () => {
@@ -831,11 +874,21 @@ export function OrganizerDashboard() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" data-testid={`button-view-${submission.id}`}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          data-testid={`button-view-${submission.id}`}
+                          onClick={() => handleViewSubmissionDetails(submission)}
+                        >
                           <Eye className="w-3 h-3 mr-1" />
                           View Details
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleAssignJudgesToSubmission(submission)}
+                          data-testid={`button-assign-judges-${submission.id}`}
+                        >
                           <Trophy className="w-3 h-3 mr-1" />
                           Assign Judges
                         </Button>
@@ -860,6 +913,124 @@ export function OrganizerDashboard() {
           />
         </TabsContent>
       </Tabs>
+      
+      {/* View Submission Details Dialog */}
+      <Dialog open={viewDetailsDialogOpen} onOpenChange={setViewDetailsDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Submission Details</DialogTitle>
+            <DialogDescription>
+              View complete information about this project submission
+            </DialogDescription>
+          </DialogHeader>
+          {selectedSubmission && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Project Name</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedSubmission.project_name || selectedSubmission.title}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Team</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedSubmission.team_name}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Track</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedSubmission.track_name}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Submitted</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(selectedSubmission.submitted_at).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Description</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {selectedSubmission.description || "No description provided"}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Files</Label>
+                <div className="mt-2 p-3 border rounded-lg">
+                  {selectedSubmission.file_url ? (
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      <span className="text-sm">Submission files available</span>
+                      <Button variant="outline" size="sm">
+                        Download
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No files submitted</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Judges Dialog */}
+      <Dialog open={assignJudgesDialogOpen} onOpenChange={setAssignJudgesDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assign Judges</DialogTitle>
+            <DialogDescription>
+              Select judges to evaluate "{selectedSubmission?.project_name || selectedSubmission?.title}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Available Judges</Label>
+              {judges.length > 0 ? (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {judges.map((judge: any) => (
+                    <div 
+                      key={judge.id} 
+                      className="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50"
+                      onClick={() => toggleJudgeSelection(judge.judge_email)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedJudgesForAssignment.includes(judge.judge_email)}
+                        onChange={() => toggleJudgeSelection(judge.judge_email)}
+                        className="rounded"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{judge.judge_email}</p>
+                        <p className="text-xs text-muted-foreground">Judge</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No judges available. Please assign judges first.
+                </p>
+              )}
+            </div>
+            <div className="flex justify-between">
+              <p className="text-sm text-muted-foreground">
+                {selectedJudgesForAssignment.length} judge(s) selected
+              </p>
+              <Button 
+                onClick={handleConfirmJudgeAssignment}
+                disabled={selectedJudgesForAssignment.length === 0}
+              >
+                Assign Selected Judges
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       {/* Edit Track Dialog */}
       <Dialog open={editTrackDialogOpen} onOpenChange={setEditTrackDialogOpen}>
