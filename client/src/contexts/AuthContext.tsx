@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User } from 'firebase/auth';
 import { auth, onAuthStateChange, handleRedirectResult } from '@/lib/firebase';
+import { apiRequest } from '@/lib/queryClient';
 
 interface AuthContextType {
   user: User | null;
@@ -47,6 +48,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           setIdToken(token);
           // Set token globally for API requests
           (window as any).__auth_token__ = token;
+          
+          // Auto-register user in backend database
+          try {
+            await apiRequest('POST', '/api/auth/register', {});
+          } catch (registrationError) {
+            console.log('User already registered or registration failed:', registrationError);
+          }
         } catch (error) {
           console.error('Error getting ID token:', error);
           setIdToken(null);
