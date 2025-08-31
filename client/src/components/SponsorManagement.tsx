@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, ExternalLink, Building2, ArrowUpDown } from 'lucide-react';
-import axios from 'axios';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Sponsor {
   id: number;
@@ -24,8 +25,6 @@ interface SponsorManagementProps {
 }
 
 export function SponsorManagement({ eventId }: SponsorManagementProps) {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
-  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
   const [formData, setFormData] = useState({
@@ -36,77 +35,109 @@ export function SponsorManagement({ eventId }: SponsorManagementProps) {
     display_order: 999
   });
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchSponsors();
-  }, [eventId]);
+  // Fetch sponsors using React Query
+  const { data: sponsorsData, isLoading } = useQuery({
+    queryKey: ["/api/sponsors", eventId],
+    enabled: !!eventId && eventId !== ''
+  });
 
-  const fetchSponsors = async () => {
-    try {
-      const response = await axios.get(`/api/sponsors/${eventId}`);
-      setSponsors(response.data.sponsors || []);
-    } catch (error) {
-      console.error('Error fetching sponsors:', error);
+  const sponsors = sponsorsData?.sponsors || [];
+
+  // Create sponsor mutation
+  const createSponsorMutation = useMutation({
+    mutationFn: async (sponsorData: typeof formData & { event_id: number }) => {
+      return apiRequest("POST", "/api/sponsors", sponsorData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sponsors", eventId] });
       toast({
-        title: 'Error',
-        description: 'Failed to fetch sponsors',
-        variant: 'destructive'
+        title: "Success",
+        description: "Sponsor added successfully"
       });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    try {
-      if (editingSponsor) {
-        await axios.put(`/api/sponsors/${editingSponsor.id}`, formData);
-        toast({
-          title: 'Success',
-          description: 'Sponsor updated successfully'
-        });
-      } else {
-        await axios.post('/api/sponsors', {
-          ...formData,
-          event_id: parseInt(eventId)
-        });
-        toast({
-          title: 'Success',
-          description: 'Sponsor added successfully'
-        });
-      }
-      
       setDialogOpen(false);
       resetForm();
-      fetchSponsors();
-    } catch (error) {
-      console.error('Error saving sponsor:', error);
+    },
+    onError: () => {
       toast({
-        title: 'Error',
-        description: 'Failed to save sponsor',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to add sponsor. Please try again.",
+        variant: "destructive"
       });
+    }
+  });
+
+  // Update sponsor mutation
+  const updateSponsorMutation = useMutation({
+    mutationFn: async (data: { id: number } & typeof formData) => {
+      return apiRequest("PUT", `/api/sponsors/${data.id}`, {
+        name: data.name,
+        logo_url: data.logo_url,
+        website: data.website,
+        tier: data.tier,
+        display_order: data.display_order
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sponsors", eventId] });
+      toast({
+        title: "Success",
+        description: "Sponsor updated successfully"
+      });
+      setDialogOpen(false);
+      resetForm();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update sponsor. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Delete sponsor mutation
+  const deleteSponsorMutation = useMutation({
+    mutationFn: async (sponsorId: number) => {
+      return apiRequest("DELETE", `/api/sponsors/${sponsorId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sponsors", eventId] });
+      toast({
+        title: "Success",
+        description: "Sponsor deleted successfully"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete sponsor. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.logo_url) {
+      toast({
+        title: "Error",
+        description: "Please fill in sponsor name and logo URL.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (editingSponsor) {
+      updateSponsorMutation.mutate({ ...formData, id: editingSponsor.id });
+    } else {
+      createSponsorMutation.mutate({ ...formData, event_id: parseInt(eventId) });
     }
   };
 
   const handleDelete = async (sponsorId: number) => {
     if (!confirm('Are you sure you want to delete this sponsor?')) return;
-    
-    try {
-      await axios.delete(`/api/sponsors/${sponsorId}`);
-      toast({
-        title: 'Success',
-        description: 'Sponsor deleted successfully'
-      });
-      fetchSponsors();
-    } catch (error) {
-      console.error('Error deleting sponsor:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete sponsor',
-        variant: 'destructive'
-      });
-    }
+    deleteSponsorMutation.mutate(sponsorId);
   };
 
   const handleEdit = (sponsor: Sponsor) => {
@@ -254,7 +285,7 @@ export function SponsorManagement({ eventId }: SponsorManagementProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
               <div key={i} className="animate-pulse">
