@@ -39,4 +39,4 @@ localPort = 5000
 externalPort = 80
 
 [agent]
-integrations = ["javascript_log_in_with_replit==1.0.0", "firebase_barebones_javascript==1.0.0", "javascript_database==1.0.0", "javascript_websocket==1.0.0"]
+integrations = ["javascript_database==1.0.0", "javascript_object_storage==1.0.0", "javascript_websocket==1.0.0", "firebase_barebones_javascript==1.0.0", "javascript_log_in_with_replit==1.0.0"]

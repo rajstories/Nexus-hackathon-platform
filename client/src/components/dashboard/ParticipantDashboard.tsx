@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { SubmissionForm } from '@/components/SubmissionForm';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { 
@@ -834,84 +835,7 @@ export function ParticipantDashboard() {
         </TabsContent>
 
         <TabsContent value="submit" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="w-5 h-5" />
-                Project Submission
-              </CardTitle>
-              <CardDescription>Submit your project for judging</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {profile.team ? (
-                <Dialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full" size="lg" data-testid="button-submit-project">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Submit Project
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Submit Your Project</DialogTitle>
-                      <DialogDescription>Provide details about your hackathon project</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="project-name">Project Name</Label>
-                        <Input id="project-name" placeholder="Enter your project name" data-testid="input-project-name" />
-                      </div>
-                      <div>
-                        <Label htmlFor="project-description">Description</Label>
-                        <Textarea 
-                          id="project-description" 
-                          placeholder="Describe what your project does and how it works" 
-                          className="min-h-[100px]"
-                          data-testid="input-project-description"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="github-url">GitHub Repository</Label>
-                          <div className="flex">
-                            <Github className="w-4 h-4 mt-3 mr-2 text-muted-foreground" />
-                            <Input id="github-url" placeholder="https://github.com/..." data-testid="input-github-url" />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="demo-url">Live Demo URL</Label>
-                          <div className="flex">
-                            <ExternalLink className="w-4 h-4 mt-3 mr-2 text-muted-foreground" />
-                            <Input id="demo-url" placeholder="https://..." data-testid="input-demo-url" />
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="tech-stack">Technologies Used</Label>
-                        <Input id="tech-stack" placeholder="React, Node.js, PostgreSQL, etc." data-testid="input-tech-stack" />
-                      </div>
-                      <Button onClick={handleSubmitProject} className="w-full" data-testid="button-confirm-submit">
-                        <Trophy className="w-4 h-4 mr-2" />
-                        Submit for Judging
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              ) : (
-                <div className="text-center py-8">
-                  <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Join a Team First</h3>
-                  <p className="text-muted-foreground mb-4">You need to be part of a team to submit a project</p>
-                  <Button variant="outline" onClick={() => {
-                    const teamTab = document.querySelector('[data-testid="tab-team"]') as HTMLButtonElement;
-                    teamTab?.click();
-                  }}>
-                    Go to Team Tab
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <SubmissionForm currentTeam={currentTeam} />
         </TabsContent>
       </Tabs>
     </div>
