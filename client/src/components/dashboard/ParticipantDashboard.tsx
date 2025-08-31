@@ -51,6 +51,12 @@ export function ParticipantDashboard() {
   const [memberEmail, setMemberEmail] = useState("");
   const queryClient = useQueryClient();
 
+  // Fetch user data from database
+  const { data: userData, isLoading: userDataLoading } = useQuery({
+    queryKey: ['/api/auth/me'],
+    enabled: !!user,
+  });
+
   // Fetch user's teams
   const { data: userTeams, isLoading: teamsLoading } = useQuery({
     queryKey: ['/api', 'teams', 'me'],
@@ -62,8 +68,8 @@ export function ParticipantDashboard() {
   const teamsData = userTeams?.data?.teams || userTeams?.teams || [];
   const currentTeam = Array.isArray(teamsData) && teamsData.length > 0 ? teamsData[0] : null;
 
-  // Show loading while auth is being determined
-  if (loading) {
+  // Show loading while auth or user data is being determined
+  if (loading || userDataLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="flex items-center justify-center h-64">
@@ -73,12 +79,13 @@ export function ParticipantDashboard() {
     );
   }
 
-  // Use real user data from Firebase auth
+  // Use real user data from database and Firebase auth
   const profile = {
-    name: user?.displayName || "User",
-    email: user?.email || "No email",
-    school: "Not specified", // Can be added to user profile later
-    skills: ["React", "Node.js", "Python", "UI/UX"], // Default skills - can be made dynamic later
+    name: userData?.data?.name || user?.displayName || "User",
+    email: userData?.data?.email || user?.email || "No email",
+    school: userData?.data?.school || "Not specified",
+    skills: userData?.data?.skills || [],
+    bio: userData?.data?.bio || "",
     team: currentTeam, // Real team data from API
     photoURL: user?.photoURL
   };
@@ -145,6 +152,30 @@ export function ParticipantDashboard() {
     }
   });
 
+  // Update Profile Mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (profileData: { name: string; school: string; skills: string[] }) => {
+      const response = await apiRequest('PUT', '/api/auth/profile', profileData);
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully!"
+      });
+      setEditProfileOpen(false);
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update profile. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleCreateTeam = () => {
     if (!teamName.trim()) {
       toast({
@@ -196,12 +227,11 @@ export function ParticipantDashboard() {
   };
 
   const handleSaveProfile = () => {
-    // In a real app, this would save to the database
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been updated successfully!"
+    updateProfileMutation.mutate({
+      name: editedProfile.name,
+      school: editedProfile.school,
+      skills: editedProfile.skills
     });
-    setEditProfileOpen(false);
   };
 
   const handleLogout = async () => {
@@ -404,9 +434,10 @@ export function ParticipantDashboard() {
                         </Button>
                         <Button 
                           onClick={handleSaveProfile}
+                          disabled={updateProfileMutation.isPending}
                           data-testid="button-save-profile"
                         >
-                          Save Changes
+                          {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
                         </Button>
                       </div>
                     </div>

@@ -10,6 +10,9 @@ export const users = pgTable("users", {
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   role: varchar("role", { length: 50 }).notNull().default("participant"),
+  school: varchar("school", { length: 255 }),
+  bio: text("bio"),
+  skills: text("skills"), // JSON array stored as text
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -338,6 +341,18 @@ export const insertEventReviewSchema = createInsertSchema(eventReviews);
 
 // Type exports
 export type User = typeof users.$inferSelect;
+
+// User profile update schema
+export const updateProfileSchema = createInsertSchema(users).pick({
+  name: true,
+  school: true,
+  bio: true,
+  skills: true,
+}).extend({
+  skills: z.array(z.string()).optional().transform(skills => skills ? JSON.stringify(skills) : undefined),
+});
+
+export type UpdateProfileRequest = z.infer<typeof updateProfileSchema>;
 export type InsertUser = typeof users.$inferInsert;
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = typeof events.$inferInsert;

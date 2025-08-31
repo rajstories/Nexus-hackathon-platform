@@ -10,6 +10,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUserFromFirebase(firebaseUid: string, name: string, email: string): Promise<User>;
+  updateUserProfile(userId: string, profileData: { name?: string; school?: string | null; bio?: string | null; skills?: string; }): Promise<User>;
   
   // Team operations
   createTeam(team: InsertTeam): Promise<Team>;
@@ -128,6 +129,9 @@ export class DatabaseStorage implements IStorage {
         name: users.name,
         email: users.email,
         role: users.role,
+        school: users.school,
+        bio: users.bio,
+        skills: users.skills,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
@@ -136,6 +140,18 @@ export class DatabaseStorage implements IStorage {
       .where(eq(teamMembers.teamId, teamId));
 
     return members;
+  }
+
+  async updateUserProfile(userId: string, profileData: { name?: string; school?: string | null; bio?: string | null; skills?: string; }): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        ...profileData,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
   }
 }
 

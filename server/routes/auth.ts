@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { verifyFirebaseToken, type AuthenticatedRequest } from '../lib/firebase-admin';
 import { storage } from '../storage';
+import { updateProfileSchema } from '@shared/schema';
 
 const router = Router();
 
@@ -78,6 +79,9 @@ router.get('/me',
           name: user.name,
           email: user.email,
           role: user.role,
+          school: user.school,
+          bio: user.bio,
+          skills: user.skills ? JSON.parse(user.skills) : [],
           created_at: user.createdAt,
           updated_at: user.updatedAt,
         }
@@ -88,6 +92,64 @@ router.get('/me',
       res.status(500).json({
         error: 'Internal server error',
         message: 'Failed to get user information'
+      });
+    }
+  })
+);
+
+// PUT /api/auth/profile - Update user profile
+router.put('/profile',
+  verifyFirebaseToken,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const firebaseUser = req.user!;
+      const uid = firebaseUser.firebaseUid || firebaseUser.userId;
+      
+      // Get user from database
+      const user = await storage.getUserByFirebaseUid(uid);
+      if (!user) {
+        return res.status(404).json({
+          error: 'User not found',
+          message: 'Please complete registration first'
+        });
+      }
+
+      // Validate request body
+      const validationResult = updateProfileSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({
+          error: 'Validation failed',
+          message: 'Invalid profile data provided',
+          details: validationResult.error.errors
+        });
+      }
+
+      const profileData = validationResult.data;
+      
+      // Update user profile
+      const updatedUser = await storage.updateUserProfile(user.id, profileData);
+
+      res.status(200).json({
+        data: {
+          id: updatedUser.id,
+          firebase_uid: updatedUser.firebaseUid,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          school: updatedUser.school,
+          bio: updatedUser.bio,
+          skills: updatedUser.skills ? JSON.parse(updatedUser.skills) : [],
+          created_at: updatedUser.createdAt,
+          updated_at: updatedUser.updatedAt,
+        },
+        message: 'Profile updated successfully'
+      });
+
+    } catch (error) {
+      console.error('Update profile error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to update profile'
       });
     }
   })
